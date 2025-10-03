@@ -1,0 +1,4721 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blinko • نظام التمويل الجماعي والمزادات</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <style>
+        /* جميع الأنماط الأصلية محفوظة بالكامل */
+        :root {
+            --primary: #0f0f23;
+            --secondary: #ffd700;
+            --accent: #ff6b35;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff375f;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --bg: #0a0a1a;
+            --text: #ffffff;
+            --text-secondary: #b8b8b8;
+            --border: #2a2a4a;
+            --sidebar-width: 280px;
+            --glow: 0 0 20px rgba(255, 215, 0, 0.3);
+            --glow-strong: 0 0 30px rgba(255, 215, 0, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg) 0%, #1a1a2e 100%);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+            will-change: transform;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--secondary);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+            will-change: transform;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        /* ==================== نظام الإشعارات المحسن ==================== */
+        .notification-center {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .notification-item {
+            background: rgba(42,42,74,0.95);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--secondary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            animation: slideInRight 0.3s ease-out;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .notification-item.success { border-left-color: var(--success); }
+        .notification-item.error { border-left-color: var(--danger); }
+        .notification-item.warning { border-left-color: var(--warning); }
+        .notification-item.info { border-left-color: var(--secondary); }
+
+        .notification-icon {
+            font-size: 1.2em;
+            margin-top: 2px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .notification-close:hover {
+            color: var(--text);
+            background: rgba(255,255,255,0.1);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* ==================== نظام تقييم المستخدمين ==================== */
+        .user-rating-system {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 2px;
+        }
+
+        .rating-star {
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .rating-star.active {
+            color: var(--secondary);
+        }
+
+        .rating-star:hover {
+            transform: scale(1.2);
+        }
+
+        .rating-value {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        /* ==================== تحسينات غرفة المزاد المباشر ==================== */
+        .bid-history-panel {
+            position: absolute;
+            bottom: 120px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 5;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 250px;
+        }
+
+        .bid-history-title {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
+
+        .bid-history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .bid-user {
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .bid-amount {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .bid-time {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        /* ==================== تحسينات لوحة التحكم ==================== */
+        .quick-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .quick-stat-card {
+            background: rgba(42,42,74,0.6);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .quick-stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--secondary);
+            box-shadow: var(--glow);
+        }
+
+        .quick-stat-icon {
+            font-size: 1.5em;
+            margin-bottom: 8px;
+        }
+
+        .quick-stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .quick-stat-label {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        /* ==================== نظام توليد QR للشحن ==================== */
+        .qr-generation-section {
+            background: rgba(42,42,74,0.6);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+        }
+
+        .qr-creation-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .batch-generation, .single-generation {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .batch-generation input, .single-generation input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(15,15,35,0.8);
+            color: var(--text);
+        }
+
+        .qr-preview {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 2px solid var(--secondary);
+            display: none;
+        }
+
+        #qrCodeContainer {
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .qr-info {
+            margin: 15px 0;
+        }
+
+        .qr-status-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .status-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .status-card.active { border: 2px solid var(--success); }
+        .status-card.used { border: 2px solid var(--secondary); }
+        .status-card.expired { border: 2px solid var(--danger); }
+
+        .status-count {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .qr-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .qr-table th, .qr-table td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .qr-table th {
+            background: rgba(255,255,255,0.1);
+            color: var(--secondary);
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status-badge.active { background: var(--success); color: white; }
+        .status-badge.used { background: var(--secondary); color: black; }
+        .status-badge.expired { background: var(--danger); color: white; }
+
+        .btn-small {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        /* ==================== نظام إدارة المزادات ==================== */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .price-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .price-card:hover {
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .price-analysis {
+            background: rgba(42,42,74,0.6);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+        }
+
+        .auction-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .media-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .preview-item {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            background: var(--border);
+        }
+
+        .preview-item img, .preview-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .simple-auction-creator {
+            background: rgba(42,42,74,0.8);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            max-width: 500px;
+            margin: 20px 0;
+        }
+
+        .simple-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* باقي الأنماط الأصلية */
+        .main-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo-section {
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 4em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255,215,0,0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .tagline {
+            font-size: 1.8em;
+            font-weight: 300;
+            color: var(--text);
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .description {
+            font-size: 1.1em;
+            color: var(--text-secondary);
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .divider {
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+            margin: 30px auto;
+        }
+
+        .get-started-btn {
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            color: var(--primary);
+            border: none;
+            padding: 18px 50px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .get-started-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--glow-strong);
+        }
+
+        /* باقي الأنماط الأصلية */
+        .compact-auctions-page {
+            min-height: 100vh;
+            padding: 15px;
+            display: none;
+            background: var(--bg);
+        }
+
+        .compact-header {
+            background: rgba(42,42,74,0.8);
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .compact-logo {
+            font-size: 1.4em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .compact-user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .compact-balance {
+            background: rgba(255,215,0,0.1);
+            color: var(--secondary);
+            padding: 6px 12px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,215,0,0.3);
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .live-auction-btn {
+            background: linear-gradient(135deg, var(--accent), #ff8c42);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255,107,53,0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .live-auction-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(255,107,53,0.6);
+        }
+
+        .live-auction-btn:disabled {
+            background: var(--border);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* نظام المزايدة التلقائية */
+        .auto-bid-section {
+            background: rgba(42,42,74,0.6);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+        }
+
+        .auto-bid-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+        }
+
+        /* نظام الدفع */
+        .payment-methods {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .payment-method {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method.active {
+            border-color: var(--secondary);
+            background: rgba(255,215,0,0.1);
+        }
+
+        /* تحسين الوصولية */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* تحسين التباين للوصولية */
+        .high-contrast {
+            --text: #000000;
+            --bg: #ffffff;
+            --border: #333333;
+        }
+
+        /* المزاد السنوي الكبير */
+        .compact-grand-auction {
+            background: linear-gradient(135deg, rgba(42,42,74,0.8) 0%, rgba(26,26,46,0.9) 100%);
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .compact-auction-title {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .compact-main-title {
+            font-size: 1.6em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .compact-countdown {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .compact-time-unit {
+            text-align: center;
+        }
+
+        .compact-time-value {
+            font-size: 1.8em;
+            font-weight: 800;
+            color: var(--text);
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            min-width: 60px;
+        }
+
+        .compact-time-label {
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-size: 0.8em;
+        }
+
+        .compact-bid-section {
+            margin: 20px 0;
+        }
+
+        .compact-bid-title {
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-size: 0.9em;
+        }
+
+        .compact-bid-button {
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            color: var(--primary);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .compact-bid-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow);
+        }
+
+        /* قسم الإلكترونيات */
+        .compact-electronics-section {
+            margin-bottom: 15px;
+        }
+
+        .compact-section-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 15px;
+            padding-right: 10px;
+        }
+
+        .compact-products-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .compact-product-card {
+            background: rgba(42,42,74,0.6);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .compact-product-card:hover {
+            border-color: var(--secondary);
+            transform: translateY(-3px);
+        }
+
+        .compact-product-name {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .compact-product-description {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .compact-product-price {
+            font-size: 1.3em;
+            font-weight: 800;
+            color: var(--secondary);
+            margin: 12px 0;
+        }
+
+        .compact-product-bid {
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            color: var(--primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .compact-product-bid:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow);
+        }
+
+        /* المزاد الأسبوعي */
+        .compact-weekly-auction {
+            background: linear-gradient(135deg, rgba(42,42,74,0.8) 0%, rgba(26,26,46,0.9) 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .compact-weekly-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .compact-ending-soon {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+        }
+
+        /* نافذة المزايدة */
+        .compact-bid-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .compact-bid-modal.active {
+            display: flex;
+        }
+
+        .compact-modal-content {
+            background: linear-gradient(135deg, rgba(42,42,74,0.95) 0%, rgba(26,26,46,0.98) 100%);
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 320px;
+            width: 100%;
+            border: 2px solid var(--secondary);
+            box-shadow: 0 0 50px rgba(255,215,0,0.3);
+            text-align: center;
+        }
+
+        .compact-modal-title {
+            color: var(--secondary);
+            margin-bottom: 16px;
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+
+        .compact-bid-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: rgba(15,15,35,0.8);
+            color: var(--text);
+            font-size: 1em;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .compact-modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .compact-confirm-btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            color: var(--primary);
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .compact-cancel-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        /* ==================== غرفة المزاد المباشر ==================== */
+        .live-auction-room {
+            min-height: 100vh;
+            background: #000;
+            display: none;
+            position: relative;
+        }
+
+        /* الفيديو الرئيسي */
+        .product-video {
+            width: 100%;
+            height: 70vh;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-video::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%);
+        }
+
+        .video-placeholder {
+            font-size: 3em;
+            color: var(--secondary);
+            text-align: center;
+            z-index: 2;
+        }
+
+        .video-placeholder i {
+            font-size: 2em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .recorded-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .recorded-image.active {
+            display: block;
+        }
+
+        /* خيار تبديل الوسائط */
+        .media-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        .media-btn {
+            background: transparent;
+            color: var(--text);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .media-btn.active {
+            background: var(--secondary);
+            color: var(--primary);
+        }
+
+        /* إعلان الفائز */
+        .winner-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.85);
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid var(--secondary);
+            box-shadow: 0 0 30px rgba(255,215,0,0.5);
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(255,215,0,0.5); }
+            to { box-shadow: 0 0 40px rgba(255,215,0,0.8); }
+        }
+
+        /* العدّاد */
+        .auction-timer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+
+        .timer-circle {
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.8);
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .timer-circle span {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        /* زر المزايدة */
+        .bid-control {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+
+        .bid-btn {
+            background: linear-gradient(135deg, var(--success), #00cc77);
+            color: white;
+            border: none;
+            padding: 25px 50px;
+            border-radius: 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(0,255,136,0.5);
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .bid-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 40px rgba(0,255,136,0.7);
+        }
+
+        .bid-btn:active {
+            transform: translateY(0);
+        }
+
+        .bid-btn:disabled {
+            background: var(--border);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .viewer-message {
+            background: rgba(255,255,255,0.1);
+            color: var(--text);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+        }
+
+        /* الجوائز */
+        .prizes-sidebar {
+            position: absolute;
+            top: 120px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid var(--accent);
+            backdrop-filter: blur(10px);
+            z-index: 5;
+        }
+
+        .prize-item {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            border-right: 3px solid var(--accent);
+        }
+
+        /* عناصر التحكم */
+        .room-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .control-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid var(--border);
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: var(--secondary);
+        }
+
+        /* معلومات المنتج */
+        .product-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 5;
+        }
+
+        .current-bid {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        /* ==================== لوحة تحكم المشرف ==================== */
+        .admin-control-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 3000;
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .admin-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        .admin-panel-header h2 {
+            color: var(--secondary);
+            font-size: 2em;
+        }
+
+        .close-admin-panel {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-admin-panel:hover {
+            color: var(--danger);
+            background: rgba(255,55,95,0.1);
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .tab-btn.active {
+            background: var(--secondary);
+            color: var(--primary);
+            border-color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .tab-pane {
+            display: none;
+            padding: 20px;
+            background: rgba(42,42,74,0.3);
+            border-radius: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .admin-login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 26, 0.98);
+            z-index: 4000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .admin-login-container {
+            background: linear-gradient(135deg, rgba(42,42,74,0.95) 0%, rgba(26,26,46,0.98) 100%);
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            border: 2px solid var(--secondary);
+            box-shadow: 0 0 50px rgba(255,215,0,0.3);
+            text-align: center;
+        }
+
+        .admin-login-container h3 {
+            color: var(--secondary);
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+
+        .admin-login-container input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(15,15,35,0.8);
+            color: var(--text);
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .admin-login-container button {
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            color: var(--primary);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .admin-login-container button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow-strong);
+        }
+
+        /* باقي الأنماط الحالية */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-overlay.active {
+            display: flex;
+        }
+
+        .login-container {
+            background: linear-gradient(135deg, rgba(42,42,74,0.95) 0%, rgba(26,26,46,0.98) 100%);
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            border: 2px solid var(--secondary);
+            box-shadow: 0 0 50px rgba(255,215,0,0.3);
+            position: relative;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-title {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+        }
+
+        .login-form {
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 0.95em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 18px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: rgba(15,15,35,0.8);
+            color: var(--text);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: var(--glow);
+        }
+
+        .form-input.error {
+            border-color: var(--danger);
+            box-shadow: 0 0 10px rgba(255,55,95,0.3);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            accent-color: var(--secondary);
+        }
+
+        .checkbox-label {
+            font-size: 0.9em;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .btn {
+            padding: 16px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: var(--glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow-strong);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            color: var(--secondary);
+            border-color: var(--secondary);
+        }
+
+        .close-login {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-login:hover {
+            color: var(--danger);
+            background: rgba(255,55,95,0.1);
+        }
+
+        /* رسالة الخطأ في حقل الهاتف */
+        .phone-error {
+            color: var(--danger);
+            font-size: 0.8em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .phone-error.show {
+            display: block;
+        }
+
+        /* ==================== أنماط المتجر الجانبي الجديدة ==================== */
+        .store-trigger {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            color: var(--primary);
+            padding: 15px 10px;
+            border-radius: 0 15px 15px 0;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: var(--glow);
+            border: 2px solid var(--secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .store-trigger:hover {
+            transform: translateY(-50%) translateX(5px);
+            box-shadow: var(--glow-strong);
+        }
+
+        .store-trigger i {
+            font-size: 1.5em;
+        }
+
+        .store-badge {
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: bold;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+
+        .store-side-panel {
+            position: fixed;
+            top: 0;
+            left: -400px;
+            width: 380px;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--dark) 0%, #1a1a2e 100%);
+            z-index: 2000;
+            transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-right: 3px solid var(--secondary);
+            overflow-y: auto;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.5);
+        }
+
+        .store-side-panel.open {
+            left: 0;
+        }
+
+        .store-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1500;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .store-overlay.active {
+            display: block;
+        }
+
+        .store-panel-header {
+            background: rgba(42,42,74,0.95);
+            padding: 20px;
+            border-bottom: 2px solid var(--secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .store-panel-header h3 {
+            color: var(--secondary);
+            margin: 0;
+            font-size: 1.4em;
+        }
+
+        .close-store {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-store:hover {
+            color: var(--danger);
+            background: rgba(255,55,95,0.1);
+        }
+
+        .store-panel-content {
+            padding: 20px;
+        }
+
+        .store-categories {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            background: rgba(255,255,255,0.1);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .category-btn.active,
+        .category-btn:hover {
+            background: var(--secondary);
+            color: var(--primary);
+            border-color: var(--secondary);
+        }
+
+        .store-products-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .store-product-card {
+            background: rgba(42,42,74,0.6);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .store-product-card:hover {
+            border-color: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: var(--glow);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            background: var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-name {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .product-description {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .product-price {
+            font-size: 1.3em;
+            font-weight: 800;
+            color: var(--secondary);
+            margin: 12px 0;
+        }
+
+        .add-to-cart-btn {
+            background: linear-gradient(135deg, var(--secondary), #ffed4e);
+            color: var(--primary);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .add-to-cart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow);
+        }
+
+        .add-to-cart-btn:active {
+            transform: translateY(0);
+        }
+
+        .cart-summary {
+            position: sticky;
+            bottom: 0;
+            background: rgba(42,42,74,0.95);
+            padding: 15px 20px;
+            border-top: 2px solid var(--secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-total {
+            color: var(--secondary);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .checkout-btn {
+            background: linear-gradient(135deg, var(--success), #00cc77);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,255,136,0.4);
+        }
+
+        @media (max-width: 768px) {
+            .compact-products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .compact-countdown {
+                gap: 10px;
+            }
+            
+            .compact-time-value {
+                font-size: 1.5em;
+                min-width: 50px;
+            }
+            
+            .payment-methods {
+                flex-direction: column;
+            }
+
+            .product-video {
+                height: 60vh;
+            }
+            
+            .timer-circle {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .timer-circle span {
+                font-size: 1.4em;
+            }
+            
+            .bid-btn {
+                padding: 20px 40px;
+                font-size: 1.1em;
+            }
+            
+            .prizes-sidebar {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin: 20px;
+            }
+
+            .notification-center {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                width: auto;
+            }
+            
+            .bid-history-panel {
+                position: relative;
+                bottom: auto;
+                right: auto;
+                width: 100%;
+                margin: 15px 0;
+            }
+            
+            .quick-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .qr-creation-options {
+                grid-template-columns: 1fr;
+            }
+
+            .qr-status-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .auction-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .quick-actions {
+                flex-direction: column;
+            }
+
+            .store-side-panel {
+                width: 320px;
+                left: -320px;
+            }
+            
+            .store-trigger {
+                padding: 12px 8px;
+            }
+            
+            .store-trigger i {
+                font-size: 1.2em;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .compact-products-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .compact-products-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .store-side-panel {
+                width: 280px;
+                left: -280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- تأثيرات الخلفية -->
+    <div class="bg-particles" id="particles"></div>
+    
+    <!-- نظام الإشعارات المحسن -->
+    <div class="notification-center" id="notificationCenter"></div>
+    
+    <!-- الصفحة الرئيسية -->
+    <div class="main-page active" id="mainPage">
+        <div class="logo-section">
+            <div class="logo" id="mainLogo" onclick="checkAdminAccess()">Blinko</div>
+            <div class="tagline">Global QR & Auction System</div>
+            <div class="description">
+                Access Exclusive Opportunities Worldwide<br><br>
+                Get verified one-time QR codes for special offers and opportunities in your region. Secure, validated, and impossible to reuse.
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <button class="get-started-btn" onclick="showLogin()">Get Started</button>
+
+        <!-- إعدادات الوصولية -->
+        <div style="position: fixed; bottom: 20px; left: 20px; z-index: 1000;">
+            <button onclick="toggleHighContrast()" style="background: var(--secondary); color: black; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
+                <i class="fas fa-contrast"></i> High Contrast
+            </button>
+        </div>
+    </div>
+
+    <!-- واجهة تسجيل الدخول -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-container">
+            <button class="close-login" onclick="hideLogin()">✕</button>
+            
+            <div class="login-header">
+                <div class="login-title">تسجيل الدخول</div>
+                <div class="login-subtitle">أدخل بياناتك للوصول إلى النظام</div>
+            </div>
+
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">رقم الهاتف</label>
+                    <input type="tel" class="form-input" id="phoneNumber" placeholder="+216 XX XXX XXX" required>
+                    <div class="phone-error" id="phoneError">
+                        ❌ رقم الهاتف غير صحيح. يرجى استخدام الصيغة: +216 XX XXX XXX
+                    </div>
+
+                    <div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px;">
+                        أمثلة صحيحة: +216 12 345 678 أو +216 50 123 456 أو 12345678
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" class="checkbox" id="ageCheck" required>
+                    <label class="checkbox-label" for="ageCheck">
+                        أؤكد أن عمري فوق 18 عاماً وأتحمل المسؤولية القانونية الكاملة
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" class="checkbox" id="ownershipCheck" required>
+                    <label class="checkbox-label" for="ownershipCheck">
+                        أقر بأن رقم الهاتف مسجل باسمي قانونياً وأتحمل المسؤولية عن أي استخدام غير مصرح به
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" class="checkbox" id="termsCheck" required>
+                    <label class="checkbox-label" for="termsCheck">
+                        أوافق على الشروط والأحكام وسياسة الخصوصية
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">تسجيل الدخول</button>
+                <button type="button" class="btn btn-secondary" onclick="hideLogin()">إلغاء</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- واجهة المستخدم المدمجة -->
+    <div class="compact-auctions-page" id="compactAuctionsPage">
+        <header class="compact-header">
+            <div class="compact-logo">Blinko</div>
+            <div class="compact-user-menu">
+                <div class="compact-balance">
+                    <i class="fas fa-wallet"></i> <span id="userBalance">1,500 DT</span>
+                </div>
+                <button class="logout-btn" onclick="logoutFromCompact()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- زر غرفة المزاد المباشر -->
+        <button class="live-auction-btn" id="liveAuctionBtn" onclick="openLiveAuctionRoom()">
+            <i class="fas fa-video"></i>
+            المزاد المباشر الحي
+            <span style="font-size: 0.8em; opacity: 0.8;">🔴</span>
+        </button>
+
+        <!-- قسم الدفع عبر QR -->
+        <section class="qr-payment-section">
+            <h2 class="compact-section-title">📸 الدفع عبر QR Code</h2>
+            
+            <div class="qr-scanner-interface">
+                <div class="camera-preview" id="cameraPreview">
+                    <video id="qrScanner" style="width: 100%; height: 300px; display: none;"></video>
+                    <div class="scanning-overlay">
+                        <div class="scan-frame"></div>
+                        <p>لتفعيل المسح بالكاميرا، احتاج خدمة HTTPS</p>
+                        <p style="font-size: 0.9em; margin-top: 10px;">جرب النظام بمحاكاة المسح أولاً</p>
+                    </div>
+                </div>
+
+                <div class="upload-option">
+                    <input type="file" id="qrImageUpload" accept="image/*" style="display: none;">
+                    <button class="compact-bid-button" onclick="document.getElementById('qrImageUpload').click()">
+                        📁 رفع صورة QR
+                    </button>
+                </div>
+
+                <!-- محاكاة المسح للاختبار -->
+                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                    <h4>🎯 محاكاة المسح (للاختبار)</h4>
+                    <p style="font-size: 0.9em; margin: 10px 0;">جرب النظام بمحاكاة لرمز الدفع:</p>
+                    <button class="compact-bid-button" onclick="simulateQRScan()">
+                        🔄 محاكاة مسح رمز تجريبي
+                    </button>
+                </div>
+
+                <!-- معلومات الرمز الممسوح -->
+                <div class="qr-details" id="qrDetails">
+                    <h4>تفاصيل الدفع</h4>
+                    <div class="payment-info">
+                        <p>المبلغ: <span id="scannedAmount">0</span> د.ت</p>
+                        <p>الرقم التسلسلي: <span id="scannedSerial">-</span></p>
+                        <p>الحالة: <span id="scannedStatus">-</span></p>
+                    </div>
+                    <button id="confirmPaymentBtn" class="compact-bid-button" onclick="confirmQRPayment()">
+                        ✅ تأكيد الدفع
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- المزاد السنوي الكبير -->
+        <section class="compact-grand-auction">
+            <div class="compact-auction-title">Annual grand auction</div>
+            <h1 class="compact-main-title">Blinko Auction</h1>
+            
+            <div class="compact-countdown">
+                <div class="compact-time-unit">
+                    <div class="compact-time-value" id="compactHours">12</div>
+                    <div class="compact-time-label">HOURS</div>
+                </div>
+                <div class="compact-time-unit">
+                    <div class="compact-time-value" id="compactMinutes">35</div>
+                    <div class="compact-time-label">MINUTES</div>
+                </div>
+                <div class="compact-time-unit">
+                    <div class="compact-time-value" id="compactSeconds">58</div>
+                    <div class="compact-time-label">SECONDS</div>
+                </div>
+            </div>
+
+            <!-- نظام المزايدة التلقائية -->
+            <div class="auto-bid-section">
+                <div class="auto-bid-toggle">
+                    <span>المزايدة التلقائية</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoBidToggle" onchange="toggleAutoBid()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div id="autoBidSettings" style="display: none;">
+                    <input type="number" id="maxBidAmount" class="compact-bid-input" placeholder="أقصى مبلغ للمزايدة" style="margin-bottom: 10px;">
+                    <button class="compact-bid-button" onclick="saveAutoBidSettings()">
+                        <i class="fas fa-save"></i> حفظ الإعدادات
+                    </button>
+                </div>
+            </div>
+
+            <div class="compact-bid-section">
+                <div class="compact-bid-title">Place a bid</div>
+                <button class="compact-bid-button" onclick="openCompactBidModal()">
+                    <i class="fas fa-gavel"></i> Bid Now
+                </button>
+            </div>
+        </section>
+
+        <!-- قسم الإلكترونيات -->
+        <section class="compact-electronics-section">
+            <h2 class="compact-section-title">Electronics</h2>
+            
+            <div class="compact-products-grid">
+                <!-- المنتج 1 -->
+                <div class="compact-product-card">
+                    <h3 class="compact-product-name">Phantom Drones</h3>
+                    <p class="compact-product-description">
+                        Advanced drone with 4K camera, remote control, and long battery life.
+                    </p>
+                    <div class="compact-product-price">600 Dinars</div>
+                    <button class="compact-product-bid" onclick="openCompactProductBid('Phantom Drones', 600)">
+                        <i class="fas fa-gavel"></i> Bid
+                    </button>
+                </div>
+
+                <!-- المنتج 2 -->
+                <div class="compact-product-card">
+                    <h3 class="compact-product-name">62" 4K LED Android TV</h3>
+                    <p class="compact-product-description">
+                        Smart TV with 4K LED display, Android system, and advanced HDR technology.
+                    </p>
+                    <div class="compact-product-price">230 Dinars</div>
+                    <button class="compact-product-bid" onclick="openCompactProductBid('62\" 4K LED Android TV', 230)">
+                        <i class="fas fa-gavel"></i> Bid
+                    </button>
+                </div>
+
+                <!-- المنتج 3 -->
+                <div class="compact-product-card">
+                    <h3 class="compact-product-name">iPhone 15 Pro</h3>
+                    <p class="compact-product-description">
+                        Modern smartphone with OLED display, advanced camera, and Face ID technology.
+                    </p>
+                    <div class="compact-product-price">450 Dinars</div>
+                    <button class="compact-product-bid" onclick="openCompactProductBid('iPhone 15 Pro', 450)">
+                        <i class="fas fa-gavel"></i> Bid
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- المزاد الأسبوعي -->
+        <section class="compact-weekly-auction">
+            <h3 class="compact-weekly-title">Weekly auction</h3>
+            <p class="compact-ending-soon">Auction ending soon</p>
+        </section>
+
+        <!-- طرق الدفع -->
+        <section class="auto-bid-section">
+            <h3 class="compact-section-title">طرق الدفع</h3>
+            <div class="payment-methods">
+                <div class="payment-method active" onclick="selectPaymentMethod('credit-card')">
+                    <i class="fas fa-credit-card"></i>
+                    <div>بطاقة ائتمان</div>
+                </div>
+                <div class="payment-method" onclick="selectPaymentMethod('paypal')">
+                    <i class="fab fa-paypal"></i>
+                    <div>PayPal</div>
+                </div>
+                <div class="payment-method" onclick="selectPaymentMethod('bank-transfer')">
+                    <i class="fas fa-university"></i>
+                    <div>تحويل بنكي</div>
+                </div>
+                <div class="payment-method" onclick="selectPaymentMethod('qr-code')">
+                    <i class="fas fa-qrcode"></i>
+                    <div>QR Code</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- نظام تقييم المستخدمين المضاف -->
+        <section class="auto-bid-section">
+            <h3 class="compact-section-title">تقييم النظام</h3>
+            <div class="user-rating-system">
+                <div class="rating-stars" id="userRatingStars">
+                    <i class="fas fa-star rating-star" data-rating="1"></i>
+                    <i class="fas fa-star rating-star" data-rating="2"></i>
+                    <i class="fas fa-star rating-star" data-rating="3"></i>
+                    <i class="fas fa-star rating-star" data-rating="4"></i>
+                    <i class="fas fa-star rating-star" data-rating="5"></i>
+                </div>
+                <div class="rating-value" id="ratingValue">0/5</div>
+            </div>
+            <button class="compact-bid-button" onclick="submitUserRating()" style="margin-top: 10px;">
+                <i class="fas fa-paper-plane"></i> إرسال التقييم
+            </button>
+        </section>
+    </div>
+
+    <!-- نافذة المزايدة -->
+    <div class="compact-bid-modal" id="compactBidModal">
+        <div class="compact-modal-content">
+            <h3 class="compact-modal-title" id="compactModalTitle">Place a Bid</h3>
+            <input type="number" id="compactBidAmount" class="compact-bid-input" placeholder="Bid amount">
+            
+            <!-- طرق الدفع في نافذة المزايدة -->
+            <div class="payment-methods" style="margin: 15px 0;">
+                <div class="payment-method active" onclick="selectPaymentMethod('credit-card', true)">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+
+                <div class="payment-method" onclick="selectPaymentMethod('paypal', true)">
+                    <i class="fab fa-paypal"></i>
+                </div>
+                <div class="payment-method" onclick="selectPaymentMethod('bank-transfer', true)">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div class="payment-method" onclick="selectPaymentMethod('qr-code', true)">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+            </div>
+
+            <div class="compact-modal-buttons">
+                <button class="compact-confirm-btn" onclick="placeCompactBid()">Confirm Bid</button>
+                <button class="compact-cancel-btn" onclick="closeCompactBidModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- غرفة المزاد المباشر -->
+    <div class="live-auction-room" id="liveAuctionRoom">
+        <!-- الفيديو الرئيسي -->
+        <div class="product-video">
+            <div class="video-placeholder" id="liveVideoPlaceholder">
+                <i class="fas fa-play-circle"></i>
+                <div>البث المباشر للمنتج</div>
+                <div style="font-size: 0.5em; margin-top: 10px; color: var(--text-secondary);">
+                    هاتف ذكي أيفون 15 برو
+                </div>
+            </div>
+
+            <!-- صورة مسجلة -->
+            <img src="https://via.placeholder.com/800x600/1a1a2e/ffffff?text=Blinko+Auction+Product" 
+                 alt="صورة المنتج المسجلة" 
+                 class="recorded-image" 
+                 id="recordedImage">
+
+            <!-- خيار تبديل الوسائط -->
+            <div class="media-toggle">
+                <button class="media-btn active" onclick="switchMedia('live')">
+                    <i class="fas fa-video"></i> بث مباشر
+                </button>
+                <button class="media-btn" onclick="switchMedia('recorded')">
+                    <i class="fas fa-image"></i> صورة
+                </button>
+            </div>
+
+            <!-- إعلان الفائز -->
+            <div class="winner-overlay" id="winnerOverlay" style="display: none;">
+                <div style="font-size: 1.2em; font-weight: bold; color: var(--secondary);">
+                    🏆 الفائز
+                </div>
+                <div id="winnerName" style="font-size: 1.1em; margin: 5px 0;">أحمد</div>
+                <div id="winnerAmount" style="color: var(--success); font-weight: bold;">4,250 د.ت</div>
+            </div>
+        </div>
+
+        <!-- العدّاد -->
+        <div class="auction-timer">
+            <div class="timer-circle">
+                <span id="liveTimer">10</span>
+            </div>
+        </div>
+
+        <!-- زر المزايدة -->
+        <div class="bid-control">
+            <button class="bid-btn" id="bidButton" onclick="placeBid()">
+                🎯 مزايدة<br>
+                <span id="bidPrice" style="font-size: 0.9em;">+50 د.ت</span>
+            </button>
+            <div class="viewer-message" id="viewerMessage" style="display: none;">
+                <i class="fas fa-info-circle"></i>
+                للمشاهدة فقط - سجّل الدخول للمزايدة
+            </div>
+        </div>
+
+        <!-- الجوائز -->
+        <div class="prizes-sidebar">
+            <h4 style="color: var(--accent); margin-bottom: 15px;">🎁 الجوائز</h4>
+            <div class="prize-item">🥇 هاتف ذكي أيفون 15 برو</div>
+            <div class="prize-item">🥈 سماعات لاسلكية</div>
+            <div class="prize-item">🥉 شاحن سريع</div>
+        </div>
+
+        <!-- لوحة تاريخ المزايدات المضاف -->
+        <div class="bid-history-panel">
+            <div class="bid-history-title">آخر المزايدات</div>
+            <div class="bid-history-list" id="bidHistoryList">
+                <!-- سيتم تعبئته ديناميكياً -->
+            </div>
+        </div>
+
+        <!-- عناصر التحكم -->
+        <div class="room-controls">
+            <button class="control-btn" onclick="exitAuctionRoom()">
+                <i class="fas fa-times"></i> خروج
+            </button>
+            <button class="control-btn" onclick="toggleSound()">
+                <i class="fas fa-volume-up"></i> صوت
+            </button>
+        </div>
+
+        <!-- معلومات المنتج -->
+        <div class="product-info">
+            <div class="current-bid" id="currentBid">4,250 د.ت</div>
+            <div style="color: var(--text-secondary); font-size: 0.9em;">
+                السقف: <span id="maxBid">4,675 د.ت</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- لوحة تحكم المشرف -->
+    <div class="admin-control-panel" id="adminControlPanel">
+        <div class="admin-panel-header">
+            <h2>👑 لوحة تحكم المشرف</h2>
+            <button class="close-admin-panel" onclick="hideAdminPanel()">✕</button>
+        </div>
+        
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="openAdminTab('dashboard-tab')">📊 لوحة التحكم</button>
+            <button class="tab-btn" onclick="openAdminTab('qr-payment-tab')">🎫 رموز الدفع</button>
+            <button class="tab-btn" onclick="openAdminTab('qr-tab')">📱 إدارة QR</button>
+            <button class="tab-btn" onclick="openAdminTab('auctions-tab')">🖼️ إدارة المزادات</button>
+            <button class="tab-btn" onclick="openAdminTab('users-tab')">👥 إدارة المستخدمين</button>
+            <button class="tab-btn" onclick="openAdminTab('analytics-tab')">📈 التقارير</button>
+        </div>
+        
+        <div class="admin-tab-content">
+            <!-- تبويب لوحة التحكم الرئيسية -->
+            <div id="dashboard-tab" class="tab-pane active">
+                <div class="admin-dashboard">
+                    
+                    <!-- الإحصائيات السريعة المضاف -->
+                    <div class="quick-stats-grid">
+                        <div class="quick-stat-card" onclick="openAdminTab('users-tab')">
+                            <div class="quick-stat-icon">👥</div>
+                            <div class="quick-stat-value" id="quickUsers">0</div>
+                            <div class="quick-stat-label">مستخدم مسجل</div>
+                        </div>
+                        <div class="quick-stat-card" onclick="openAdminTab('auctions-tab')">
+                            <div class="quick-stat-icon">🛒</div>
+                            <div class="quick-stat-value" id="quickProducts">0</div>
+                            <div class="quick-stat-label">منتج نشط</div>
+                        </div>
+                        <div class="quick-stat-card" onclick="openAdminTab('qr-payment-tab')">
+                            <div class="quick-stat-icon">💳</div>
+                            <div class="quick-stat-value" id="quickRevenue">0 د.ت</div>
+                            <div class="quick-stat-label">إيرادات اليوم</div>
+                        </div>
+                        <div class="quick-stat-card" onclick="openAdminTab('analytics-tab')">
+                            <div class="quick-stat-icon">📈</div>
+                            <div class="quick-stat-value" id="quickRating">0/5</div>
+                            <div class="quick-stat-label">تقييم النظام</div>
+                        </div>
+                    </div>
+
+                    <!-- البطاقات الإحصائية الأصلية -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i class="fas fa-users"></i>
+                            <div class="stat-number" id="activeUsers">0</div>
+                            <div class="stat-label">مستخدم نشط الآن</div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-gavel"></i>
+                            <div class="stat-number" id="activeAuctions">0</div>
+                            <div class="stat-label">مزاد مباشر نشط</div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <div class="stat-number" id="totalBids">0</div>
+                            <div class="stat-label">مزايدة اليوم</div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-chart-line"></i>
+                            <div class="stat-number" id="revenue">0 د.ت</div>
+                            <div class="stat-label">إيرادات اليوم</div>
+                        </div>
+                    </div>
+
+                    <!-- المزادات النشطة حالياً -->
+                    <div class="live-auctions-section">
+                        <h3>🔴 المزادات المباشرة النشطة</h3>
+                        <div class="auction-cards" id="liveAuctionsContainer">
+                            <div class="no-auctions">لا توجد مزادات نشطة حالياً</div>
+                        </div>
+                    </div>
+
+                    <!-- نشاط النظام -->
+                    <div class="system-activity">
+                        <h3>📈 نشاط النظام</h3>
+                        <div class="activity-stats">
+                            <div class="activity-item">
+                                <span>آخر مزايدة:</span>
+                                <span id="lastBidTime">--</span>
+                            </div>
+                            <div class="activity-item">
+                                <span>حالة الخادم:</span>
+                                <span class="status-online">🟢 يعمل بكفاءة</span>
+                            </div>
+                            <div class="activity-item">
+                                <span>الذاكرة المستخدمة:</span>
+                                <span>64%</span>
+                            </div>
+                            <div class="activity-item">
+                                <span>وقت التشغيل:</span>
+                                <span>12:45:23</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- تبويب رموز الدفع - تمت إضافته -->
+            <div id="qr-payment-tab" class="tab-pane">
+                <div class="qr-generation-section">
+                    <h3>🎫 إنشاء رموز دفع QR</h3>
+                    
+                    <div class="qr-creation-options">
+                        <!-- دفعة رموز -->
+                        <div class="batch-generation">
+                            <h4>إنشاء دفعة رموز</h4>
+                            <input type="number" id="batchCount" placeholder="عدد الرموز" min="1" max="100">
+                            <input type="number" id="batchAmount" placeholder="المبلغ (د.ت)">
+                            <button class="btn-primary" onclick="generateBatchQR()">إنشاء دفعة</button>
+                        </div>
+
+                        <!-- رمز فردي -->
+                        <div class="single-generation">
+                            <h4>رمز فردي مخصص</h4>
+                            <input type="number" id="singleAmount" placeholder="المبلغ (د.ت)">
+                            <input type="text" id="purpose" placeholder="الغرض (اختياري)">
+                            <button class="btn-primary" onclick="generateSingleQR()">إنشاء رمز</button>
+                        </div>
+                    </div>
+
+                    <!-- معاينة الرمز -->
+                    <div class="qr-preview" id="qrPreview">
+                        <h4>🎯 الرمز الجاهز للطباعة</h4>
+                        <div id="qrCodeContainer"></div>
+                        <div class="qr-info">
+                            <p>المبلغ: <span id="previewAmount">0</span> د.ت</p>
+                            <p>الرقم التسلسلي: <span id="previewSerial">-</span></p>
+                            <p>صلاحية: <span id="previewExpiry">-</span></p>
+                        </div>
+                        <button class="btn-primary" onclick="printQR()">🖨️ طباعة الرمز</button>
+                    </div>
+                </div>
+
+                <!-- نظام تتبع الرموز -->
+                <div class="qr-tracking-section">
+                    <h3>📊 تتبع رموز الدفع</h3>
+                    
+                    <div class="qr-status-cards">
+                        <div class="status-card active">
+                            <div class="status-count" id="activeCodes">0</div>
+                            <div class="status-label">نشطة</div>
+                        </div>
+                        <div class="status-card used">
+                            <div class="status-count" id="usedCodes">0</div>
+                            <div class="status-label">مستعملة</div>
+                        </div>
+                        <div class="status-card expired">
+                            <div class="status-count" id="expiredCodes">0</div>
+                            <div class="status-label">منتهية</div>
+                        </div>
+                    </div>
+
+                    <!-- قائمة الرموز -->
+                    <div class="qr-codes-list">
+                        <table class="qr-table">
+                            <thead>
+                                <tr>
+                                    <th>الرقم التسلسلي</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                    <th>تاريخ الإنشاء</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="qrCodesTable">
+                                <!-- يتم تعبئته ديناميكياً -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تبويب إدارة رموز QR -->
+            <div id="qr-tab" class="tab-pane">
+                <div style="text-align: center; padding: 40px;">
+                    <h3>📱 إدارة رموز QR</h3>
+                    <p>هذا القسم مخصص للإدارة المتقدمة لرموز QR</p>
+                    <button class="btn btn-primary" onclick="showQRManagement()">فتح إدارة متقدمة</button>
+                </div>
+            </div>
+
+            <!-- تبويب إدارة المزادات - النسخة المحدثة -->
+            <div id="auctions-tab" class="tab-pane">
+                <div style="margin-bottom: 30px;">
+                    <h3>🖼️ إدارة المزادات</h3>
+                    <p>إنشاء وإدارة مزادات جديدة مع تحكم كامل في الأسعار والإعدادات</p>
+                </div>
+
+                <!-- الإحصائيات السريعة -->
+                <div class="auction-stats-grid">
+                    <div class="stat-card" style="padding: 15px;">
+                        <i class="fas fa-gavel"></i>
+                        <div class="stat-number" id="totalAuctions">0</div>
+                        <div class="stat-label">إجمالي المزادات</div>
+                    </div>
+                    <div class="stat-card" style="padding: 15px;">
+                        <i class="fas fa-play-circle"></i>
+                        <div class="stat-number" id="activeAuctionsCount">0</div>
+                        <div class="stat-label">نشطة الآن</div>
+                    </div>
+                    <div class="stat-card" style="padding: 15px;">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <div class="stat-number" id="totalValue">0 د.ت</div>
+                        <div class="stat-label">القيمة الإجمالية</div>
+                    </div>
+                    <div class="stat-card" style="padding: 15px;">
+                        <i class="fas fa-chart-bar"></i>
+                        <div class="stat-number" id="avgBid">0 د.ت</div>
+                        <div class="stat-label">متوسط Bid</div>
+                    </div>
+                </div>
+
+                <!-- أزرار سريعة -->
+                <div class="quick-actions">
+                    <button class="quick-action-btn" onclick="showQuickAuctionForm()" 
+                            style="background: var(--success); color: white;">
+                        🚀 إنشاء سريع
+                    </button>
+                    <button class="quick-action-btn" onclick="importSampleAuctions()" 
+                            style="background: var(--secondary); color: black;">
+                        📥 أمثلة جاهزة
+                    </button>
+                    <button class="quick-action-btn" onclick="exportAuctionsData()" 
+                            style="background: var(--accent); color: white;">
+                        📤 تصدير البيانات
+                    </button>
+                </div>
+
+                <!-- نموذج إنشاء المزاد -->
+                <div class="simple-auction-creator" style="max-width: 100%; display: none;" id="auctionForm">
+                    <h4>🎯 إنشاء مزاد جديد</h4>
+                    
+                    <div class="simple-form">
+                        <!-- وسائط المنتج -->
+                        <div class="form-group">
+                            <label>🖼️ وسائط المنتج (اختياري)</label>
+                            <input type="file" id="auctionMedia" accept="image/*,video/*" multiple 
+                                   style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: rgba(15,15,35,0.8); color: var(--text); width: 100%;">
+                        </div>
+
+                        <!-- معاينة الوسائط -->
+                        <div id="mediaPreview" style="display: none; margin: 15px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                            <h5>معاينة الوسائط</h5>
+                            <div class="media-preview-grid" id="previewContainer"></div>
+                        </div>
+
+                        <!-- الوصف -->
+                        <div class="form-group">
+                            <label>📝 وصف المنتج</label>
+                            <textarea id="productDescription" placeholder="اكتب وصف واضح للمنتج..." rows="3" 
+                                      style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(15,15,35,0.8); color: var(--text);"></textarea>
+                        </div>
+
+                        <!-- شبكة الأسعار -->
+                        <div class="pricing-grid">
+                            <!-- سعر السوق -->
+                            <div class="price-card">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    <i class="fas fa-tag" style="color: var(--success);"></i>
+                                    <label style="font-weight: 600;">سعر السوق</label>
+                                </div>
+                                <input type="number" id="marketValue" placeholder="القيمة السوقية" 
+                                       style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(15,15,35,0.8); color: var(--text);">
+                            </div>
+
+                            <!-- الحد الأقصى -->
+                            <div class="price-card">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    <i class="fas fa-chart-line" style="color: var(--warning);"></i>
+                                    <label style="font-weight: 600;">الحد الأقصى</label>
+                                </div>
+                                <input type="number" id="auctionCeiling" placeholder="سقف المزاد" 
+                                       style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(15,15,35,0.8); color: var(--text);">
+                            </div>
+
+                            <!-- قيمة Bid -->
+                            <div class="price-card">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    <i class="fas fa-gavel" style="color: var(--secondary);"></i>
+                                    <label style="font-weight: 600;">قيمة Bid</label>
+                                </div>
+                                <select id="defaultBidPrice" 
+                                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(15,15,35,0.8); color: var(--text);">
+                                    <option value="5">5 د.ت</option>
+                                    <option value="10">10 د.ت</option>
+                                    <option value="25">25 د.ت</option>
+                                    <option value="50" selected>50 د.ت</option>
+                                    <option value="100">100 د.ت</option>
+                                </select>
+                            </div>
+
+                            <!-- السعر الحالي -->
+                            <div class="price-card">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    <i class="fas fa-bolt" style="color: var(--accent);"></i>
+                                    <label style="font-weight: 600;">السعر الحالي</label>
+                                </div>
+                                <input type="number" id="currentPrice" placeholder="السعر الابتدائي" 
+                                       style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(15,15,35,0.8); color: var(--text);">
+                            </div>
+                        </div>
+
+                        <!-- تحليل الأسعار -->
+                        <div class="price-analysis">
+                            <h5 style="margin-bottom: 15px; color: var(--secondary);">📈 تحليل الأسعار</h5>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
+                                <div>
+                                    <div style="font-size: 0.8em; color: var(--text-secondary);">الفرق السعري</div>
+                                    <div id="priceDifference" style="font-weight: bold; color: var(--success);">0 د.ت</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8em; color: var(--text-secondary);">عدد النقرات</div>
+                                    <div id="requiredClicks" style="font-weight: bold; color: var(--warning);">0</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8em; color: var(--text-secondary);">هامش الربح</div>
+                                    <div id="profitMargin" style="font-weight: bold; color: var(--accent);">0%</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8em; color: var(--text-secondary);">الحالة</div>
+                                    <div id="priceStatus" style="font-weight: bold; color: var(--text-secondary);">---</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- أزرار التحكم -->
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button class="publish-btn" onclick="createNewAuction()" style="flex: 2; background: linear-gradient(135deg, var(--success), #00cc77); color: white; border: none; padding: 15px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">
+                                🚀 نشر المزاد
+                            </button>
+                            <button class="btn-secondary" onclick="hideAuctionForm()" style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); padding: 15px 25px; border-radius: 8px; cursor: pointer;">
+                                إلغاء
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قائمة المزادات -->
+                <div class="live-auctions-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;">📋 المزادات الحالية</h3>
+                        <button class="compact-bid-button" onclick="showQuickAuctionForm()" style="background: linear-gradient(135deg, var(--secondary), #ffed4e); color: var(--primary); border: none; padding: 10px 20px; border-radius: 20px; font-weight: 700; cursor: pointer;">
+                            ➕ إنشاء جديد
+                        </button>
+                    </div>
+
+                    <!-- فلترة -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <select id="auctionFilter" onchange="filterAuctions()" 
+                                style="padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border);">
+                            <option value="all">جميع المزادات</option>
+                            <option value="active">نشطة</option>
+                            <option value="ended">منتهية</option>
+                        </select>
+                        
+                        <input type="text" id="searchAuctions" placeholder="🔍 بحث..." oninput="filterAuctions()"
+                               style="flex: 1; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border);">
+                    </div>
+
+                    <!-- القائمة -->
+                    <div class="auction-cards" id="auctionsListContainer">
+                        <div class="no-auctions">لا توجد مزادات حالياً</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تبويب إدارة المستخدمين -->
+            <div id="users-tab" class="tab-pane">
+                <div style="text-align: center; padding: 40px;">
+                    <h3>👥 إدارة المستخدمين</h3>
+                    <p>إدارة حسابات المستخدمين والصلاحيات</p>
+                </div>
+            </div>
+
+            <!-- تبويب التحليلات -->
+            <div id="analytics-tab" class="tab-pane">
+                <div style="text-align: center; padding: 40px;">
+                    <h3>📈 التقارير والتحليلات</h3>
+                    <p>تقارير وإحصائيات مفصلة عن أداء النظام</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة دخول المشرف -->
+    <div class="admin-login-overlay" id="adminLoginOverlay">
+        <div class="admin-login-container">
+            <h3>🔐 دخول المشرف</h3>
+
+            <input type="password" id="adminPassword" placeholder="أدخل كلمة المرور السرية">
+            <button onclick="verifyAdminAccess()">🚀 دخول</button>
+            <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9em;">
+                جرب: 93678044 أو admin
+            </p>
+        </div>
+    </div>
+
+    <!-- ==================== متجر Blinko الجانبي المضاف ==================== -->
+    <div class="store-trigger" onclick="openStorePanel()">
+        <i class="fas fa-store"></i>
+        <span class="store-badge" id="cartCount">0</span>
+    </div>
+
+    <div class="store-side-panel" id="storePanel">
+        <div class="store-panel-header">
+            <h3>🛍️ متجر Blinko</h3>
+            <button class="close-store" onclick="closeStorePanel()">✕</button>
+        </div>
+        
+        <div class="store-panel-content">
+            <!-- فئات المتجر -->
+            <div class="store-categories">
+                <button class="category-btn active" onclick="filterProducts('all')">الكل</button>
+                <button class="category-btn" onclick="filterProducts('electronics')">إلكترونيات</button>
+                <button class="category-btn" onclick="filterProducts('accessories')">ملحقات</button>
+                <button class="category-btn" onclick="filterProducts('offers')">عروض خاصة</button>
+            </div>
+
+            <!-- شبكة المنتجات -->
+            <div class="store-products-grid" id="storeProducts">
+                <!-- المنتج 1 -->
+                <div class="store-product-card" data-category="electronics">
+                    <div class="product-image">
+                        <i class="fas fa-headphones" style="font-size: 3em; color: var(--text-secondary);"></i>
+                    </div>
+                    <h3 class="product-name">سماعات لاسلكية</h3>
+                    <p class="product-description">سماعات بلوتوث عالية الجودة مع تقنية إلغاء الضوضاء</p>
+                    <div class="product-price">120 د.ت</div>
+                    <button class="add-to-cart-btn" onclick="addToCart('سماعات لاسلكية', 120)">
+                        🛒 إضافة إلى السلة
+                    </button>
+                </div>
+
+                <!-- المنتج 2 -->
+                <div class="store-product-card" data-category="accessories">
+                    <div class="product-image">
+                        <i class="fas fa-mobile-alt" style="font-size: 3em; color: var(--text-secondary);"></i>
+                    </div>
+                    <h3 class="product-name">شاحن سريع</h3>
+                    <p class="product-description">شاحن سريع 30 واط مع كابل USB-C</p>
+                    <div class="product-price">45 د.ت</div>
+                    <button class="add-to-cart-btn" onclick="addToCart('شاحن سريع', 45)">
+                        🛒 إضافة إلى السلة
+                    </button>
+                </div>
+
+                <!-- المنتج 3 -->
+                <div class="store-product-card" data-category="offers">
+                    <div class="product-image">
+                        <i class="fas fa-gift" style="font-size: 3em; color: var(--text-secondary);"></i>
+                    </div>
+                    <h3 class="product-name">باقة العضوية الذهبية</h3>
+                    <p class="product-description">خصومات حصرية ومزايا إضافية في المزادات</p>
+                    <div class="product-price">200 د.ت</div>
+                    <button class="add-to-cart-btn" onclick="addToCart('باقة العضوية الذهبية', 200)">
+                        🛒 إضافة إلى السلة
+                    </button>
+                </div>
+
+                <!-- المنتج 4 -->
+                <div class="store-product-card" data-category="electronics">
+                    <div class="product-image">
+                        <i class="fas fa-tablet-alt" style="font-size: 3em; color: var(--text-secondary);"></i>
+                    </div>
+                    <h3 class="product-name">حامل تابلت</h3>
+                    <p class="product-description">حامل متعدد الزوايا للتابلت والهواتف</p>
+                    <div class="product-price">35 د.ت</div>
+                    <button class="add-to-cart-btn" onclick="addToCart('حامل تابلت', 35)">
+                        🛒 إضافة إلى السلة
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ملخص السلة -->
+        <div class="cart-summary">
+            <div class="cart-total" id="cartTotal">المجموع: 0 د.ت</div>
+            <button class="checkout-btn" onclick="checkout()">
+                💳 اتمام الشراء
+            </button>
+        </div>
+    </div>
+
+    <!-- طبقة الخلفية -->
+    <div class="store-overlay" id="storeOverlay" onclick="closeStorePanel()"></div>
+
+    <script>
+        // ==================== نظام التحسينات الآمنة ====================
+        
+        // 1. نظام النسخ الاحتياطي الآمن
+        class SafeBackupSystem {
+            constructor() {
+                this.backupKey = 'blinko_safe_backup';
+                this.maxBackups = 3;
+            }
+
+            createBackup() {
+                try {
+                    const backupData = {
+                        auctions: localStorage.getItem('blinkoAuctions'),
+                        qrCodes: localStorage.getItem('blinkoQRCodes'),
+                        ratings: localStorage.getItem('blinkoSystemRatings'),
+                        timestamp: new Date().toISOString()
+                    };
+
+                    const existingBackups = this.getBackups();
+                    existingBackups.unshift(backupData);
+
+                    // الاحتفاظ بعدد محدود من النسخ الاحتياطية
+                    if (existingBackups.length > this.maxBackups) {
+                        existingBackups.pop();
+                    }
+
+                    localStorage.setItem(this.backupKey, JSON.stringify(existingBackups));
+                    console.log('✅ نسخة احتياطية آمنة تم إنشاؤها');
+                } catch (error) {
+                    console.warn('⚠️ تعذر إنشاء نسخة احتياطية:', error);
+                }
+            }
+
+            getBackups() {
+                try {
+                    return JSON.parse(localStorage.getItem(this.backupKey)) || [];
+                } catch {
+                    return [];
+                }
+            }
+
+            autoBackup() {
+                // نسخ احتياطي تلقائي كل 5 دقائق
+                setInterval(() => {
+                    this.createBackup();
+                }, 5 * 60 * 1000);
+            }
+        }
+
+        // 2. نظام إدارة الذاكرة الآمن
+        class SafeMemoryManager {
+            constructor() {
+                this.cleanupInterval = 2 * 60 * 1000; // كل دقيقتين
+            }
+
+            cleanupTempResources() {
+                // تنظيف عناصر DOM المؤقتة
+                const tempElements = document.querySelectorAll('[data-temp="true"]');
+                tempElements.forEach(el => {
+                    if (!el.isConnected || el.offsetParent === null) {
+                        el.remove();
+                    }
+                });
+
+                // تنظيف عناصر الوسائط المؤقتة
+                const mediaElements = document.querySelectorAll('img[src^="blob:"], video[src^="blob:"]');
+                mediaElements.forEach(media => {
+                    if (!media.isConnected || media.offsetParent === null) {
+                        URL.revokeObjectURL(media.src);
+                    }
+                });
+            }
+
+            startAutoCleanup() {
+                setInterval(() => {
+                    this.cleanupTempResources();
+                }, this.cleanupInterval);
+            }
+        }
+
+        // 3. نظام التعامل الآمن مع الأخطاء
+        class SafeErrorHandler {
+            static safeJSONParse(str, defaultValue = null) {
+                try {
+                    return JSON.parse(str) || defaultValue;
+                } catch {
+                    return defaultValue;
+                }
+            }
+
+            static safeLocalStorageGet(key, defaultValue = null) {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                } catch {
+                    return defaultValue;
+                }
+            }
+
+            static safeLocalStorageSet(key, value) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                    return true;
+                } catch {
+                    console.warn(`⚠️ تعذر حفظ ${key} في localStorage`);
+                    return false;
+                }
+            }
+        }
+
+        // 4. نظام تحسين الأداء
+        class PerformanceOptimizer {
+            constructor() {
+                this.debounceTimers = new Map();
+            }
+
+            debounce(func, delay, id = 'default') {
+                return (...args) => {
+                    clearTimeout(this.debounceTimers.get(id));
+                    this.debounceTimers.set(id, setTimeout(() => func.apply(this, args), delay));
+                };
+            }
+
+            throttle(func, limit, id = 'default') {
+                let inThrottle;
+                return (...args) => {
+                    if (!inThrottle) {
+                        func.apply(this, args);
+                        inThrottle = true;
+                        setTimeout(() => inThrottle = false, limit);
+                    }
+                };
+            }
+        }
+
+        // ==================== تهيئة أنظمة التحسين ====================
+        const safeBackupSystem = new SafeBackupSystem();
+        const safeMemoryManager = new SafeMemoryManager();
+        const performanceOptimizer = new PerformanceOptimizer();
+
+        // ==================== نظام الإشعارات المحسن ====================
+        class NotificationSystem {
+            constructor() {
+                this.container = document.getElementById('notificationCenter');
+                this.notifications = [];
+                this.maxNotifications = 5;
+            }
+
+            show(title, message, type = 'info', duration = 5000) {
+                const notification = {
+                    id: Date.now() + Math.random(),
+                    title,
+                    message,
+                    type,
+                    duration
+                };
+
+                this.notifications.unshift(notification);
+                if (this.notifications.length > this.maxNotifications) {
+                    this.notifications.pop();
+                }
+
+                this.render();
+                this.autoRemove(notification.id, duration);
+            }
+
+            render() {
+                this.container.innerHTML = this.notifications.map(notif => `
+                    <div class="notification-item ${notif.type}" data-id="${notif.id}">
+                        <div class="notification-icon">
+                            ${this.getIcon(notif.type)}
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">${notif.title}</div>
+                            <div class="notification-message">${notif.message}</div>
+                        </div>
+                        <button class="notification-close" onclick="notificationSystem.remove('${notif.id}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            remove(id) {
+                this.notifications = this.notifications.filter(notif => notif.id != id);
+                this.render();
+            }
+
+            autoRemove(id, duration) {
+                setTimeout(() => {
+                    this.remove(id);
+                }, duration);
+            }
+
+            getIcon(type) {
+                const icons = {
+                    'success': '✅',
+                    'error': '❌',
+                    'warning': '⚠️',
+                    'info': 'ℹ️'
+                };
+                return icons[type] || 'ℹ️';
+            }
+
+            clearAll() {
+                this.notifications = [];
+                this.render();
+            }
+        }
+
+        // ==================== نظام تقييم المستخدمين ====================
+        class UserRatingSystem {
+            constructor() {
+                this.currentRating = 0;
+                this.hasRated = localStorage.getItem('blinkoUserRating') !== null;
+                this.initializeStars();
+            }
+
+            initializeStars() {
+                const stars = document.querySelectorAll('.rating-star');
+                
+                if (this.hasRated) {
+                    this.currentRating = parseInt(localStorage.getItem('blinkoUserRating'));
+                    this.updateStarsDisplay();
+                }
+
+                stars.forEach(star => {
+                    star.addEventListener('click', () => {
+                        if (this.hasRated) return;
+                        
+                        this.currentRating = parseInt(star.dataset.rating);
+                        this.updateStarsDisplay();
+                    });
+
+                    star.addEventListener('mouseover', () => {
+                        if (this.hasRated) return;
+                        
+                        const rating = parseInt(star.dataset.rating);
+                        this.highlightStars(rating);
+                    });
+
+                    star.addEventListener('mouseout', () => {
+                        if (this.hasRated) return;
+                        
+                        this.updateStarsDisplay();
+                    });
+                });
+            }
+
+            updateStarsDisplay() {
+                const stars = document.querySelectorAll('.rating-star');
+                const ratingValue = document.getElementById('ratingValue');
+                
+                stars.forEach(star => {
+                    const starRating = parseInt(star.dataset.rating);
+                    if (starRating <= this.currentRating) {
+                        star.classList.add('active');
+                    } else {
+                        star.classList.remove('active');
+                    }
+                });
+
+                if (ratingValue) {
+                    ratingValue.textContent = `${this.currentRating}/5`;
+                }
+            }
+
+            highlightStars(rating) {
+                const stars = document.querySelectorAll('.rating-star');
+                
+                stars.forEach(star => {
+                    const starRating = parseInt(star.dataset.rating);
+                    if (starRating <= rating) {
+                        star.classList.add('active');
+                    } else {
+                        star.classList.remove('active');
+                    }
+                });
+            }
+
+            submitRating() {
+                if (this.currentRating === 0) {
+                    notificationSystem.show('تنبيه', 'يرجى اختيار تقييم قبل الإرسال', 'warning');
+                    return;
+                }
+
+                if (this.hasRated) {
+                    notificationSystem.show('معلومة', 'لقد قمت بالتقييم مسبقاً', 'info');
+                    return;
+                }
+
+                // حفظ التقييم في localStorage
+                SafeErrorHandler.safeLocalStorageSet('blinkoUserRating', this.currentRating);
+                
+                // تحديث التقييم العام في النظام
+                this.updateSystemRating(this.currentRating);
+                
+                this.hasRated = true;
+                notificationSystem.show('شكراً لك', `تم تسجيل تقييمك: ${this.currentRating} نجوم`, 'success');
+            }
+
+            updateSystemRating(newRating) {
+                const systemRatings = SafeErrorHandler.safeLocalStorageGet('blinkoSystemRatings', []);
+                systemRatings.push({
+                    rating: newRating,
+                    timestamp: new Date()
+                });
+                
+                // حفظ فقط آخر 100 تقييم
+                if (systemRatings.length > 100) {
+                    systemRatings.shift();
+                }
+                
+                SafeErrorHandler.safeLocalStorageSet('blinkoSystemRatings', systemRatings);
+                
+                // تحديث عرض التقييم العام
+                this.updateAverageRatingDisplay();
+            }
+
+            getAverageRating() {
+                const systemRatings = SafeErrorHandler.safeLocalStorageGet('blinkoSystemRatings', []);
+                if (systemRatings.length === 0) return 0;
+                
+                const total = systemRatings.reduce((sum, item) => sum + item.rating, 0);
+                return (total / systemRatings.length).toFixed(1);
+            }
+
+            updateAverageRatingDisplay() {
+                const avgRating = this.getAverageRating();
+                const quickRatingElement = document.getElementById('quickRating');
+                
+                if (quickRatingElement) {
+                    quickRatingElement.textContent = `${avgRating}/5`;
+                }
+            }
+        }
+
+        // ==================== نظام المزاد المباشر المحسن ====================
+        class EnhancedLiveAuction {
+            constructor() {
+                this.timeLeft = 10;
+                this.currentBid = 4250;
+                this.maxBid = 4675;
+                this.bidIncrement = 50;
+                this.isActive = false;
+                this.timer = null;
+                this.winner = null;
+                this.bidHistory = [];
+                this.maxBidHistory = 10;
+            }
+
+            startAuction() {
+                this.isActive = true;
+                this.startTimer();
+                this.showWinnerOverlay(false);
+                
+                // تحديث حالة التطبيق
+                appState.liveAuction.isActive = true;
+            }
+
+            startTimer() {
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('liveTimer').textContent = this.timeLeft;
+                    
+                    if (this.timeLeft <= 3) {
+                        document.querySelector('.timer-circle').style.borderColor = 'var(--danger)';
+                        document.querySelector('.timer-circle').style.animation = 'pulse 0.5s infinite';
+                    }
+                    
+                    if (this.timeLeft <= 0) {
+                        this.endAuction();
+                    }
+                }, 1000);
+            }
+
+            placeBid(userName = 'أنت') {
+                if (!this.isActive) return;
+                
+                // التحقق من صلاحية المستخدم للمزايدة
+                if (!appState.liveAuction.userCanBid) {
+                    notificationSystem.show('تنبيه', 'يجب تسجيل الدخول للمزايدة', 'warning');
+                    return;
+                }
+
+                if (this.currentBid + this.bidIncrement > this.maxBid) {
+                    this.endAuction(userName);
+                    return;
+                }
+
+                this.currentBid += this.bidIncrement;
+                this.timeLeft = 10;
+                document.querySelector('.timer-circle').style.borderColor = 'var(--secondary)';
+                
+                // تحديث الواجهة
+                document.getElementById('currentBid').textContent = this.currentBid.toLocaleString() + ' د.ت';
+                document.getElementById('liveTimer').textContent = this.timeLeft;
+                
+                // تسجيل المزايدة في التاريخ
+                this.recordBid(userName, this.currentBid);
+                
+                // تأثير المزايدة
+                this.animateBid();
+                
+                // صوت المزايدة
+                this.playBidSound();
+                
+                notificationSystem.show('نجاح', `تمت المزايدة بنجاح! المبلغ: ${this.currentBid.toLocaleString()} د.ت`, 'success');
+            }
+
+            recordBid(userName, amount) {
+                const bidRecord = {
+                    user: userName,
+                    amount: amount,
+                    timestamp: new Date()
+                };
+                
+                this.bidHistory.unshift(bidRecord);
+                
+                if (this.bidHistory.length > this.maxBidHistory) {
+                    this.bidHistory.pop();
+                }
+                
+                this.updateBidHistoryDisplay();
+            }
+
+            updateBidHistoryDisplay() {
+                const historyList = document.getElementById('bidHistoryList');
+                if (!historyList) return;
+                
+                historyList.innerHTML = this.bidHistory.map(bid => `
+                    <div class="bid-history-item">
+                        <div class="bid-user">${bid.user}</div>
+                        <div class="bid-amount">${bid.amount.toLocaleString()} د.ت</div>
+                        <div class="bid-time">${this.formatTime(bid.timestamp)}</div>
+                    </div>
+                `).join('');
+            }
+
+            formatTime(date) {
+                const now = new Date();
+                const diffMs = now - date;
+                const diffSecs = Math.floor(diffMs / 1000);
+                const diffMins = Math.floor(diffSecs / 60);
+                
+                if (diffMins < 1) {
+                    return 'الآن';
+                } else if (diffMins < 60) {
+                    return `قبل ${diffMins} دقيقة`;
+                } else {
+                    return date.toLocaleTimeString('ar-TN', { hour: '2-digit', minute: '2-digit' });
+                }
+            }
+
+            endAuction(winner = null) {
+                this.isActive = false;
+                clearInterval(this.timer);
+                
+                if (winner) {
+                    this.winner = winner;
+                    this.showWinnerOverlay(true);
+                    this.playWinSound();
+                    
+                    setTimeout(() => {
+                        this.resetAuction();
+                    }, 5000);
+                } else {
+                    this.resetAuction();
+                }
+            }
+
+            showWinnerOverlay(show) {
+                const overlay = document.getElementById('winnerOverlay');
+                if (show && this.winner) {
+                    document.getElementById('winnerName').textContent = this.winner;
+                    document.getElementById('winnerAmount').textContent = this.currentBid.toLocaleString() + ' د.ت';
+                    overlay.style.display = 'block';
+                } else {
+                    overlay.style.display = 'none';
+                }
+            }
+
+            resetAuction() {
+                this.timeLeft = 10;
+                this.currentBid = 4250;
+                this.winner = null;
+                this.bidHistory = [];
+                this.showWinnerOverlay(false);
+                document.getElementById('currentBid').textContent = this.currentBid.toLocaleString() + ' د.ت';
+                document.getElementById('liveTimer').textContent = this.timeLeft;
+                document.querySelector('.timer-circle').style.borderColor = 'var(--secondary)';
+                this.updateBidHistoryDisplay();
+                
+                setTimeout(() => {
+                    this.startAuction();
+                }, 2000);
+            }
+
+            animateBid() {
+                const bidBtn = document.getElementById('bidButton');
+                bidBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    bidBtn.style.transform = 'scale(1)';
+                }, 150);
+            }
+
+            playBidSound() {
+                // في التطبيق الحقيقي، سيتم تشغيل صوت
+                console.log('🔊 صوت المزايدة');
+            }
+
+            playWinSound() {
+                // في التطبيق الحقيقي، سيتم تشغيل صوت الفوز
+                console.log('🎉 صوت الفوز');
+            }
+
+            stopAuction() {
+                this.isActive = false;
+                clearInterval(this.timer);
+                appState.liveAuction.isActive = false;
+            }
+        }
+
+        // ==================== نظام رموز الدفع QR ====================
+        const qrPaymentSystem = {
+            codes: SafeErrorHandler.safeLocalStorageGet('blinkoQRCodes', []),
+            
+            // إنشاء رمز جديد
+            generateCode(amount, isBatch = false, purpose = '') {
+                const code = {
+                    id: this.generateID(),
+                    serial: this.generateSerial(),
+                    amount: amount,
+                    purpose: purpose,
+                    status: 'active', // active, used, expired
+                    createdAt: new Date(),
+                    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 يوم
+                    usedAt: null,
+                    usedBy: null
+                };
+                
+                this.codes.push(code);
+                this.saveToStorage();
+                return code;
+            },
+
+            // إنشاء دفعة رموز
+            generateBatch(count, amount) {
+                const batch = [];
+                for (let i = 0; i < count; i++) {
+                    batch.push(this.generateCode(amount, true, `دفعة ${i+1}`));
+                }
+                return batch;
+            },
+
+            // مسح رمز QR
+            async scanCode(serialOrImage) {
+                const code = this.codes.find(c => c.serial === serialOrImage || c.id === serialOrImage);
+                
+                if (!code) {
+                    throw new Error('❌ رمز الدفع غير صحيح');
+                }
+                
+                if (code.status !== 'active') {
+                    throw new Error('❌ رمز الدفع مستخدم أو منتهي');
+                }
+                
+                if (new Date() > new Date(code.expiresAt)) {
+                    code.status = 'expired';
+                    this.saveToStorage();
+                    throw new Error('❌ رمز الدفع منتهي الصلاحية');
+                }
+                
+                return code;
+            },
+
+            // استخدام الرمز
+            useCode(serial, userId) {
+                const code = this.codes.find(c => c.serial === serial);
+                if (code && code.status === 'active') {
+                    code.status = 'used';
+                    code.usedAt = new Date();
+                    code.usedBy = userId;
+                    this.saveToStorage();
+                    return true;
+                }
+                return false;
+            },
+
+            // أدوات مساعدة
+            generateID() {
+                return 'QR_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            },
+
+            generateSerial() {
+                return 'BLK' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            },
+
+            saveToStorage() {
+                SafeErrorHandler.safeLocalStorageSet('blinkoQRCodes', this.codes);
+            },
+
+            // إحصائيات
+            getStats() {
+                return {
+                    active: this.codes.filter(c => c.status === 'active').length,
+                    used: this.codes.filter(c => c.status === 'used').length,
+                    expired: this.codes.filter(c => c.status === 'expired').length,
+                    total: this.codes.length
+                };
+            }
+        };
+
+        // ==================== نظام إدارة المزادات المتكامل ====================
+        const auctionManager = {
+            auctions: SafeErrorHandler.safeLocalStorageGet('blinkoAuctions', []),
+            
+            createAuction(auctionData) {
+                const auction = {
+                    id: 'AUCTION_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    description: auctionData.description,
+                    marketValue: parseInt(auctionData.marketValue),
+                    ceiling: parseInt(auctionData.ceiling),
+                    bidPrice: parseInt(auctionData.bidPrice),
+                    currentPrice: parseInt(auctionData.currentPrice) || 0,
+                    duration: 7,
+                    category: 'electronics',
+                    media: auctionData.media || [],
+                    status: 'active',
+                    createdAt: new Date(),
+                    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                    currentBid: parseInt(auctionData.currentPrice) || 0,
+                    bids: [],
+                    views: 0
+                };
+                
+                this.auctions.push(auction);
+                this.saveToStorage();
+                return auction;
+            },
+            
+            deleteAuction(auctionId) {
+                this.auctions = this.auctions.filter(a => a.id !== auctionId);
+                this.saveToStorage();
+            },
+            
+            getAuctionStats() {
+                const total = this.auctions.length;
+                const active = this.auctions.filter(a => a.status === 'active').length;
+                const totalValue = this.auctions.reduce((sum, a) => sum + a.marketValue, 0);
+                const avgBid = this.auctions.length > 0 ? 
+                    this.auctions.reduce((sum, a) => sum + a.bidPrice, 0) / this.auctions.length : 0;
+                
+                return { total, active, totalValue, avgBid: Math.round(avgBid) };
+            },
+            
+            filterAuctions(filter = 'all', searchTerm = '') {
+                let filtered = this.auctions;
+                
+                if (filter !== 'all') {
+                    filtered = filtered.filter(a => a.status === filter);
+                }
+                
+                if (searchTerm) {
+                    filtered = filtered.filter(a => 
+                        a.description.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                }
+                
+                return filtered;
+            },
+            
+            saveToStorage() {
+                SafeErrorHandler.safeLocalStorageSet('blinkoAuctions', this.auctions);
+            }
+        };
+
+        // ==================== نظام المتجر الجانبي ====================
+        class StoreSystem {
+            constructor() {
+                this.cart = [];
+                this.currentCategory = 'all';
+                this.init();
+            }
+
+            init() {
+                this.loadCart();
+                this.updateCartDisplay();
+            }
+
+            // فتح وإغلاق المتجر
+            openStorePanel() {
+                document.getElementById('storePanel').classList.add('open');
+                document.getElementById('storeOverlay').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            closeStorePanel() {
+                document.getElementById('storePanel').classList.remove('open');
+                document.getElementById('storeOverlay').classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+
+            // إضافة منتج إلى السلة
+            addToCart(productName, price) {
+                const existingItem = this.cart.find(item => item.name === productName);
+                
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    this.cart.push({
+                        name: productName,
+                        price: price,
+                        quantity: 1
+                    });
+                }
+
+                this.saveCart();
+                this.updateCartDisplay();
+                
+                // إشعار ناجح
+                if (typeof notificationSystem !== 'undefined') {
+                    notificationSystem.show('تم الإضافة', `تم إضافة ${productName} إلى السلة`, 'success');
+                } else {
+                    alert(`تم إضافة ${productName} إلى السلة`);
+                }
+            }
+
+            // تحديث عرض السلة
+            updateCartDisplay() {
+                const cartCount = document.getElementById('cartCount');
+                const cartTotal = document.getElementById('cartTotal');
+                
+                const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
+                const totalPrice = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                
+                if (cartCount) {
+                    cartCount.textContent = totalItems;
+                    cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
+                }
+                
+                if (cartTotal) {
+                    cartTotal.textContent = `المجموع: ${totalPrice} د.ت`;
+                }
+            }
+
+            // تصفية المنتجات
+            filterProducts(category) {
+                this.currentCategory = category;
+                const products = document.querySelectorAll('.store-product-card');
+                const categoryBtns = document.querySelectorAll('.category-btn');
+                
+                // تحديث الأزرار النشطة
+                categoryBtns.forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                
+                // تصفية المنتجات
+                products.forEach(product => {
+                    if (category === 'all' || product.dataset.category === category) {
+                        product.style.display = 'block';
+                    } else {
+                        product.style.display = 'none';
+                    }
+                });
+            }
+
+            // اتمام الشراء
+            checkout() {
+                if (this.cart.length === 0) {
+                    if (typeof notificationSystem !== 'undefined') {
+                        notificationSystem.show('سلة فارغة', 'أضف منتجات إلى السلة أولاً', 'warning');
+                    } else {
+                        alert('السلة فارغة! أضف منتجات أولاً');
+                    }
+                    return;
+                }
+
+                const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                
+                if (typeof notificationSystem !== 'undefined') {
+                    notificationSystem.show(
+                        'اكتمال الطلب', 
+                        `تم تأكيد طلبك! المجموع: ${total} د.ت\nسيتم استخدام نظام الدفع الحالي`,
+                        'success'
+                    );
+                } else {
+                    alert(`تم تأكيد طلبك! المجموع: ${total} د.ت`);
+                }
+
+                // استخدام نظام الدفع الحالي
+                this.processPayment(total);
+            }
+
+            // معالجة الدفع
+            processPayment(amount) {
+                // استخدام نظام QR الحالي إذا كان متاحاً
+                if (typeof qrPaymentSystem !== 'undefined') {
+                    const paymentCode = qrPaymentSystem.generateCode(amount, false, 'شراء من المتجر');
+                    
+                    if (typeof notificationSystem !== 'undefined') {
+                        notificationSystem.show(
+                            'رمز الدفع جاهز',
+                            `تم إنشاء رمز QR للدفع بقيمة ${amount} د.ت`,
+                            'info'
+                        );
+                    }
+                    
+                    // مسح السلة بعد الدفع
+                    this.clearCart();
+                    this.closeStorePanel();
+                    
+                } else {
+                    // نظام دفع بديل
+                    alert(`يرجى الدفع: ${amount} د.ت\nسيتم تفعيل نظام الدفع قريباً`);
+                    this.clearCart();
+                    this.closeStorePanel();
+                }
+            }
+
+            // حفظ السلة في localStorage
+            saveCart() {
+                localStorage.setItem('blinkoStoreCart', JSON.stringify(this.cart));
+            }
+
+            // تحميل السلة من localStorage
+            loadCart() {
+                const savedCart = localStorage.getItem('blinkoStoreCart');
+                if (savedCart) {
+                    this.cart = JSON.parse(savedCart);
+                }
+            }
+
+            // مسح السلة
+            clearCart() {
+                this.cart = [];
+                this.saveCart();
+                this.updateCartDisplay();
+            }
+
+            // الحصول على إحصائيات السلة
+            getCartStats() {
+                return {
+                    totalItems: this.cart.reduce((sum, item) => sum + item.quantity, 0),
+                    totalPrice: this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                    itemCount: this.cart.length
+                };
+            }
+        }
+
+        // ==================== تهيئة الأنظمة الجديدة ====================
+        const notificationSystem = new NotificationSystem();
+        const userRatingSystem = new UserRatingSystem();
+        const enhancedAuctionSystem = new EnhancedLiveAuction();
+        const storeSystem = new StoreSystem();
+
+        // ==================== دوال جديدة للميزات المحسنة ====================
+        function submitUserRating() {
+            userRatingSystem.submitRating();
+        }
+
+        function updateQuickStats() {
+            // تحديث الإحصائيات السريعة في لوحة التحكم
+            const usersCount = appState.user ? 1 : 0;
+            const productsCount = auctionManager.auctions.filter(a => a.status === 'active').length;
+            const revenue = appState.bids ? appState.bids.length * 50 : 0;
+            const avgRating = userRatingSystem.getAverageRating();
+            
+            if (document.getElementById('quickUsers')) {
+                document.getElementById('quickUsers').textContent = usersCount;
+                document.getElementById('quickProducts').textContent = productsCount;
+                document.getElementById('quickRevenue').textContent = revenue + ' د.ت';
+                document.getElementById('quickRating').textContent = avgRating + '/5';
+            }
+        }
+
+        // ==================== دوال نظام QR Codes ====================
+        function generateBatchQR() {
+            const count = parseInt(document.getElementById('batchCount').value);
+            const amount = parseInt(document.getElementById('batchAmount').value);
+            
+            if (!count || !amount) {
+                notificationSystem.show('خطأ', 'يرجى إدخال العدد والمبلغ', 'error');
+                return;
+            }
+
+            const batch = qrPaymentSystem.generateBatch(count, amount);
+            notificationSystem.show('نجاح', `تم إنشاء ${count} رمز دفعة بقيمة ${amount} د.ت لكل منها`, 'success');
+            
+            // عرض أول رمز كمثال
+            displayQRCode(batch[0]);
+            updateQRTracking();
+        }
+
+        function generateSingleQR() {
+            const amount = parseInt(document.getElementById('singleAmount').value);
+            const purpose = document.getElementById('purpose').value;
+            
+            if (!amount) {
+                notificationSystem.show('خطأ', 'يرجى إدخال المبلغ', 'error');
+                return;
+            }
+
+            const code = qrPaymentSystem.generateCode(amount, false, purpose);
+            notificationSystem.show('نجاح', `تم إنشاء رمز دفعة بقيمة ${amount} د.ت`, 'success');
+            
+            displayQRCode(code);
+            updateQRTracking();
+        }
+
+        function displayQRCode(code) {
+            const container = document.getElementById('qrCodeContainer');
+            const preview = document.getElementById('qrPreview');
+            
+            // مسح أي رمز سابق
+            container.innerHTML = '';
+            
+            // إنشاء QR Code
+            QRCode.toCanvas(container, JSON.stringify({
+                type: 'blinko_payment',
+                serial: code.serial,
+                amount: code.amount,
+                id: code.id
+            }), {
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff"
+            }, function(error) {
+                if (error) console.error(error);
+            });
+            
+            // تحديث المعلومات
+            document.getElementById('previewAmount').textContent = code.amount;
+            document.getElementById('previewSerial').textContent = code.serial;
+            document.getElementById('previewExpiry').textContent = new Date(code.expiresAt).toLocaleDateString('ar-TN');
+            
+            preview.style.display = 'block';
+        }
+
+        function printQR() {
+            const preview = document.getElementById('qrPreview');
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>طباعة رمز الدفع</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+                            .qr-code { margin: 20px auto; }
+                            .info { margin: 15px 0; font-size: 16px; }
+                        </style>
+                    </head>
+                    <body>
+                        <h2>رمز دفع Blinko</h2>
+                        <div class="qr-code">${document.getElementById('qrCodeContainer').innerHTML}</div>
+                        <div class="info">
+                            <p>المبلغ: ${document.getElementById('previewAmount').textContent} د.ت</p>
+                            <p>الرقم التسلسلي: ${document.getElementById('previewSerial').textContent}</p>
+                            <p>صلاحية: ${document.getElementById('previewExpiry').textContent}</p>
+                        </div>
+                        <p style="margin-top: 20px; font-size: 12px; color: #666;">
+                            Blinko Auction System - رمز لمرة واحدة
+                        </p>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function updateQRTracking() {
+            const stats = qrPaymentSystem.getStats();
+            
+            document.getElementById('activeCodes').textContent = stats.active;
+            document.getElementById('usedCodes').textContent = stats.used;
+            document.getElementById('expiredCodes').textContent = stats.expired;
+            
+            // تحديث الجدول
+            updateQRCodesTable();
+        }
+
+        function updateQRCodesTable() {
+            const table = document.getElementById('qrCodesTable');
+            const codes = qrPaymentSystem.codes.slice(-10).reverse(); // آخر 10 رموز
+            
+            table.innerHTML = codes.map(code => `
+                <tr>
+                    <td>${code.serial}</td>
+                    <td>${code.amount} د.ت</td>
+                    <td>
+                        <span class="status-badge ${code.status}">
+                            ${getStatusText(code.status)}
+                        </span>
+                    </td>
+                    <td>${new Date(code.createdAt).toLocaleDateString('ar-TN')}</td>
+                    <td>
+                        <button onclick="viewQRCode('${code.serial}')" class="btn-small" style="background: var(--secondary); color: black; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
+                            👁️ عرض
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'active': 'نشط',
+                'used': 'مستعمل', 
+                'expired': 'منتهي'
+            };
+            return statusMap[status] || status;
+        }
+
+        function viewQRCode(serial) {
+            const code = qrPaymentSystem.codes.find(c => c.serial === serial);
+            if (code) {
+                displayQRCode(code);
+                notificationSystem.show('معلومة', `عرض رمز: ${serial}`, 'info');
+            }
+        }
+
+        function showQRManagement() {
+            notificationSystem.show('معلومة', '🚀 نظام إدارة QR المتقدم جاهز قريباً', 'info');
+        }
+
+        // ==================== دوال نظام إدارة المزادات ====================
+        function showQuickAuctionForm() {
+            document.getElementById('auctionForm').style.display = 'block';
+        }
+
+        function hideAuctionForm() {
+            document.getElementById('auctionForm').style.display = 'none';
+            resetAuctionForm();
+        }
+
+        function createNewAuction() {
+            const mediaFiles = document.getElementById('auctionMedia').files;
+            const description = document.getElementById('productDescription').value;
+            const marketValue = document.getElementById('marketValue').value;
+            const auctionCeiling = document.getElementById('auctionCeiling').value;
+            const defaultBidPrice = document.getElementById('defaultBidPrice').value;
+            const currentPrice = document.getElementById('currentPrice').value;
+            
+            if (!description || !marketValue || !auctionCeiling) {
+                notificationSystem.show('خطأ', 'يرجى ملء الحقول المطلوبة', 'error');
+                return;
+            }
+            
+            if (parseInt(currentPrice) >= parseInt(auctionCeiling)) {
+                notificationSystem.show('خطأ', 'السعر الحالي يجب أن يكون أقل من الحد الأقصى', 'error');
+                return;
+            }
+            
+            // معالجة الوسائط
+            const mediaUrls = [];
+            for (let file of mediaFiles) {
+                const url = URL.createObjectURL(file);
+                mediaUrls.push({
+                    url: url,
+                    type: file.type.startsWith('image/') ? 'image' : 'video',
+                    name: file.name
+                });
+            }
+            
+            const auctionData = {
+                description: description,
+                marketValue: marketValue,
+                ceiling: auctionCeiling,
+                bidPrice: defaultBidPrice,
+                currentPrice: currentPrice,
+                media: mediaUrls
+            };
+            
+            auctionManager.createAuction(auctionData);
+            notificationSystem.show('نجاح', '✅ تم إنشاء المزاد بنجاح!', 'success');
+            
+            updateAuctionStats();
+            displayAuctionsList();
+            hideAuctionForm();
+        }
+
+        function resetAuctionForm() {
+            document.getElementById('productDescription').value = '';
+            document.getElementById('marketValue').value = '';
+            document.getElementById('auctionCeiling').value = '';
+            document.getElementById('currentPrice').value = '';
+            document.getElementById('auctionMedia').value = '';
+            document.getElementById('mediaPreview').style.display = 'none';
+            updatePriceAnalysis();
+        }
+
+        function updateAuctionStats() {
+            const stats = auctionManager.getAuctionStats();
+            if (document.getElementById('totalAuctions')) {
+                document.getElementById('totalAuctions').textContent = stats.total;
+                document.getElementById('activeAuctionsCount').textContent = stats.active;
+                document.getElementById('totalValue').textContent = stats.totalValue.toLocaleString() + ' د.ت';
+                document.getElementById('avgBid').textContent = stats.avgBid + ' د.ت';
+            }
+        }
+
+        function displayAuctionsList() {
+            const container = document.getElementById('auctionsListContainer');
+            if (!container) return;
+            
+            const filter = document.getElementById('auctionFilter')?.value || 'all';
+            const searchTerm = document.getElementById('searchAuctions')?.value || '';
+            
+            const auctions = auctionManager.filterAuctions(filter, searchTerm);
+            
+            if (auctions.length === 0) {
+                container.innerHTML = '<div class="no-auctions">لا توجد مزادات</div>';
+                return;
+            }
+            
+            container.innerHTML = auctions.map(auction => `
+                <div class="auction-card">
+                    <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
+                        ${auction.media.length > 0 ? 
+                            `<img src="${auction.media[0].url}" alt="${auction.description}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">` :
+                            `<div style="width: 60px; height: 60px; background: var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-image" style="color: var(--text-secondary);"></i>
+                            </div>`
+                        }
+                        <div style="flex: 1;">
+                            <h4 style="margin-bottom: 5px;">${auction.description.substring(0, 60)}${auction.description.length > 60 ? '...' : ''}</h4>
+                            <div style="display: flex; gap: 15px; font-size: 0.8em; flex-wrap: wrap;">
+                                <span>السوق: <strong style="color: var(--success);">${auction.marketValue}</strong> د.ت</span>
+                                <span>الحد: <strong style="color: var(--warning);">${auction.ceiling}</strong> د.ت</span>
+                                <span>Bid: <strong style="color: var(--secondary);">${auction.bidPrice}</strong> د.ت</span>
+                                <span>الحالي: <strong style="color: var(--accent);">${auction.currentBid}</strong> د.ت</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="monitor-btn" onclick="editAuction('${auction.id}')" style="background: var(--secondary); color: black; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="monitor-btn" onclick="deleteAuction('${auction.id}')" style="background: var(--danger); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteAuction(auctionId) {
+            if (confirm('هل أنت متأكد من حذف هذا المزاد؟')) {
+                auctionManager.deleteAuction(auctionId);
+                notificationSystem.show('نجاح', '🗑️ تم حذف المزاد', 'success');
+                updateAuctionStats();
+                displayAuctionsList();
+            }
+        }
+
+        function filterAuctions() {
+            displayAuctionsList();
+        }
+
+        function updatePriceAnalysis() {
+            const marketValue = parseInt(document.getElementById('marketValue')?.value) || 0;
+            const ceiling = parseInt(document.getElementById('auctionCeiling')?.value) || 0;
+            const currentPrice = parseInt(document.getElementById('currentPrice')?.value) || 0;
+            const bidPrice = parseInt(document.getElementById('defaultBidPrice')?.value) || 50;
+            
+            const priceDiff = ceiling - marketValue;
+            const requiredClicks = ceiling > currentPrice ? Math.ceil((ceiling - currentPrice) / bidPrice) : 0;
+            const profitMargin = marketValue > 0 ? Math.round(((ceiling - marketValue) / marketValue) * 100) : 0;
+            
+            if (document.getElementById('priceDifference')) {
+                document.getElementById('priceDifference').textContent = priceDiff + ' د.ت';
+                document.getElementById('requiredClicks').textContent = requiredClicks;
+                document.getElementById('profitMargin').textContent = profitMargin + '%';
+                
+                const statusElement = document.getElementById('priceStatus');
+                if (ceiling < marketValue) {
+                    statusElement.textContent = '⚠️ منخفض';
+                    statusElement.style.color = 'var(--danger)';
+                } else if (profitMargin > 50) {
+                    statusElement.textContent = '📈 ممتاز';
+                    statusElement.style.color = 'var(--success)';
+                } else {
+                    statusElement.textContent = '✅ جيد';
+                    statusElement.style.color = 'var(--success)';
+                }
+            }
+        }
+
+        function importSampleAuctions() {
+            const samples = [
+                {
+                    description: "هاتف أيفون 15 برو - 256GB - أحدث موديل",
+                    marketValue: 4500,
+                    ceiling: 6000,
+                    bidPrice: 50,
+                    currentPrice: 100
+                },
+                {
+                    description: "لابتوب ديل - 16GB RAM - 512 SSD - شاشة 15 بوصة",
+                    marketValue: 3200,
+                    ceiling: 4500,
+                    bidPrice: 25,
+                    currentPrice: 200
+                }
+            ];
+            
+            samples.forEach(sample => {
+                auctionManager.createAuction(sample);
+            });
+            
+            notificationSystem.show('نجاح', '✅ تم إضافة الأمثلة الجاهزة', 'success');
+            updateAuctionStats();
+            displayAuctionsList();
+        }
+
+        function exportAuctionsData() {
+            const data = JSON.stringify(auctionManager.auctions, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'blinko-auctions-backup.json';
+            a.click();
+            notificationSystem.show('نجاح', '📤 تم تصدير بيانات المزادات', 'success');
+        }
+
+        function editAuction(auctionId) {
+            notificationSystem.show('معلومة', '✏️ وظيفة التعديل قريباً...', 'info');
+        }
+
+        // ==================== نظام إدارة الحالة الأصلي ====================
+        const appState = {
+            user: null,
+            auctions: [],
+            bids: [],
+            notifications: [],
+            autoBid: {
+                enabled: false,
+                maxAmount: 0,
+                activeAuctions: []
+            },
+            paymentMethod: 'credit-card',
+            settings: {
+                highContrast: false,
+                language: 'ar'
+            },
+            liveAuction: {
+                isActive: false,
+                currentMedia: 'live',
+                userCanBid: false
+            }
+        };
+
+        // ==================== دوال الواجهة الأساسية ====================
+        function showLogin() {
+            document.getElementById('loginOverlay').classList.add('active');
+        }
+
+        function hideLogin() {
+            document.getElementById('loginOverlay').classList.remove('active');
+            document.getElementById('phoneNumber').value = '';
+            document.getElementById('phoneError').classList.remove('show');
+            document.getElementById('phoneNumber').classList.remove('error');
+            document.getElementById('ageCheck').checked = false;
+            document.getElementById('ownershipCheck').checked = false;
+            document.getElementById('termsCheck').checked = false;
+        }
+
+        function showCompactAuctionsPage() {
+            document.getElementById('mainPage').classList.remove('active');
+            document.getElementById('compactAuctionsPage').style.display = 'block';
+            document.getElementById('loginOverlay').classList.remove('active');
+            updateCompactCountdown();
+            
+            // تحديث تتبع QR عند الدخول
+            updateQRTracking();
+        }
+
+        function showMainPage() {
+            document.getElementById('compactAuctionsPage').style.display = 'none';
+            document.getElementById('liveAuctionRoom').style.display = 'none';
+            document.getElementById('mainPage').classList.add('active');
+            enhancedAuctionSystem.stopAuction();
+        }
+
+        function logoutFromCompact() {
+            if (confirm('Are you sure you want to logout?')) {
+                appState.user = null;
+                appState.liveAuction.userCanBid = false;
+                showMainPage();
+                notificationSystem.show('نجاح', 'تم تسجيل الخروج بنجاح', 'success');
+            }
+        }
+
+        // ==================== دوال المشرف ====================
+        let adminClickCount = 0;
+        let adminClickTimer;
+
+        function checkAdminAccess() {
+            adminClickCount++;
+            
+            const logo = document.getElementById('mainLogo');
+            logo.style.transform = 'scale(0.95)';
+            setTimeout(() => { logo.style.transform = 'scale(1)'; }, 150);
+            
+            if (adminClickCount === 2) {
+                showAdminLogin();
+                adminClickCount = 0;
+            }
+            clearTimeout(adminClickTimer);
+            adminClickTimer = setTimeout(() => { adminClickCount = 0; }, 1000);
+        }
+
+        function verifyAdminAccess() {
+            const password = document.getElementById('adminPassword').value;
+            const adminPasswords = ["93678044", "admin", "1234"];
+            
+            if (adminPasswords.includes(password)) {
+                document.getElementById('adminLoginOverlay').style.display = 'none';
+                document.getElementById('adminControlPanel').style.display = 'block';
+                notificationSystem.show('نجاح', '🎉 Welcome Admin!', 'success');
+                
+                // تحديث لوحة التحكم فور دخول المشرف
+                updateQuickStats();
+                updateQRTracking();
+                updateAuctionStats();
+                displayAuctionsList();
+            } else {
+                notificationSystem.show('خطأ', '❌ Incorrect password', 'error');
+                document.getElementById('adminPassword').value = '';
+            }
+        }
+
+        function showAdminLogin() {
+            document.getElementById('adminLoginOverlay').style.display = 'flex';
+        }
+
+        function hideAdminPanel() {
+            document.getElementById('adminControlPanel').style.display = 'none';
+        }
+
+        function openAdminTab(tabName) {
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            
+            tabPanes.forEach(tab => tab.classList.remove('active'));
+            tabBtns.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            // إذا كان التبويب هو لوحة التحكم، قم بتحديثها
+            if (tabName === 'dashboard-tab') {
+                updateQuickStats();
+            }
+            if (tabName === 'qr-payment-tab') {
+                updateQRTracking();
+            }
+            if (tabName === 'auctions-tab') {
+                updateAuctionStats();
+                displayAuctionsList();
+            }
+        }
+
+        // ==================== دوال نظام المزادات ====================
+        function updateCompactCountdown() {
+            const hours = document.getElementById('compactHours');
+            const minutes = document.getElementById('compactMinutes');
+            const seconds = document.getElementById('compactSeconds');
+            
+            let time = 12 * 3600 + 35 * 60 + 58;
+            
+            setInterval(() => {
+                time--;
+                if (time < 0) time = 24 * 3600;
+                
+                const h = Math.floor(time / 3600);
+                const m = Math.floor((time % 3600) / 60);
+                const s = time % 60;
+                
+                hours.textContent = h.toString().padStart(2, '0');
+                minutes.textContent = m.toString().padStart(2, '0');
+                seconds.textContent = s.toString().padStart(2, '0');
+            }, 1000);
+        }
+
+        function toggleAutoBid() {
+            const toggle = document.getElementById('autoBidToggle');
+            const settings = document.getElementById('autoBidSettings');
+            
+            appState.autoBid.enabled = toggle.checked;
+            settings.style.display = toggle.checked ? 'block' : 'none';
+            
+            notificationSystem.show(
+                toggle.checked ? 'تم تفعيل المزايدة التلقائية' : 'تم إيقاف المزايدة التلقائية',
+                toggle.checked ? 'success' : 'info'
+            );
+        }
+
+        function saveAutoBidSettings() {
+            const maxAmount = document.getElementById('maxBidAmount').value;
+            if (!maxAmount || maxAmount < 10) {
+                notificationSystem.show('خطأ', 'يرجى إدخال مبلغ صحيح', 'error');
+                return;
+            }
+            
+            appState.autoBid.maxAmount = parseInt(maxAmount);
+            notificationSystem.show('نجاح', 'تم حفظ إعدادات المزايدة التلقائية', 'success');
+        }
+
+        function selectPaymentMethod(method, inModal = false) {
+            appState.paymentMethod = method;
+            
+            const paymentMethods = document.querySelectorAll(inModal ? 
+                '#compactBidModal .payment-method' : '.compact-auctions-page .payment-method');
+            
+            paymentMethods.forEach(pm => {
+                pm.classList.remove('active');
+                if (pm.querySelector('i').className.includes(method)) {
+                    pm.classList.add('active');
+                }
+            });
+            
+            const methodNames = {
+                'credit-card': 'بطاقة ائتمان',
+                'paypal': 'PayPal',
+                'bank-transfer': 'تحويل بنكي',
+                'qr-code': 'QR Code'
+            };
+            
+            notificationSystem.show('نجاح', `تم اختيار طريقة الدفع: ${methodNames[method]}`, 'success');
+        }
+
+        // ==================== نافذة المزايدة المدمجة ====================
+        let currentCompactProduct = null;
+        let currentCompactPrice = 0;
+
+        function openCompactBidModal() {
+            document.getElementById('compactBidModal').classList.add('active');
+            document.getElementById('compactModalTitle').textContent = 'Place a Bid - Grand Auction';
+            document.getElementById('compactBidAmount').value = '';
+        }
+
+        function openCompactProductBid(productName, price) {
+            currentCompactProduct = productName;
+            currentCompactPrice = price;
+            document.getElementById('compactBidModal').classList.add('active');
+            document.getElementById('compactModalTitle').textContent = `Bid on ${productName}`;
+            document.getElementById('compactBidAmount').value = price + 10;
+        }
+
+        function closeCompactBidModal() {
+            document.getElementById('compactBidModal').classList.remove('active');
+            currentCompactProduct = null;
+            currentCompactPrice = 0;
+        }
+
+        function placeCompactBid() {
+            const bidAmount = document.getElementById('compactBidAmount').value;
+            if (!bidAmount) {
+                notificationSystem.show('خطأ', 'يرجى إدخال مبلغ المزايدة', 'error');
+                return;
+            }
+            
+            const product = currentCompactProduct ? currentCompactProduct : 'Grand Auction';
+            
+            if (!appState.bids) appState.bids = [];
+            appState.bids.push({
+                product: product,
+                amount: parseInt(bidAmount),
+                timestamp: new Date(),
+                paymentMethod: appState.paymentMethod
+            });
+            
+            notificationSystem.show(
+                'نجاح', 
+                `تم تقديم المزايدة بنجاح!\nالمنتج: ${product}\nالمبلغ: ${bidAmount} DT\nطريقة الدفع: ${appState.paymentMethod}`, 
+                'success'
+            );
+            
+            closeCompactBidModal();
+        }
+
+        // ==================== دوال غرفة المزاد ====================
+        function openLiveAuctionRoom() {
+            // إخفاء واجهة المزادات المدمجة
+            document.getElementById('compactAuctionsPage').style.display = 'none';
+            
+            // إظهار غرفة المزاد المباشر
+            document.getElementById('liveAuctionRoom').style.display = 'block';
+            
+            // التحقق من صلاحية المستخدم للمزايدة
+            const userCanBid = appState.user !== null;
+            appState.liveAuction.userCanBid = userCanBid;
+            
+            // تحديث واجهة زر المزايدة بناءً على الصلاحية
+            const bidButton = document.getElementById('bidButton');
+            const viewerMessage = document.getElementById('viewerMessage');
+            
+            if (userCanBid) {
+                bidButton.disabled = false;
+                viewerMessage.style.display = 'none';
+                notificationSystem.show('مرحباً بك', 'يمكنك المزايدة الآن في المزاد المباشر!', 'success');
+            } else {
+                bidButton.disabled = true;
+                viewerMessage.style.display = 'block';
+                notificationSystem.show('مشاهد فقط', 'سجّل الدخول للمشاركة في المزايدة', 'info');
+            }
+            
+            // بدء المزاد بعد ثانيتين
+            setTimeout(() => {
+                enhancedAuctionSystem.startAuction();
+            }, 2000);
+        }
+
+        function exitAuctionRoom() {
+            if (confirm('هل تريد مغادرة غرفة المزاد المباشر؟')) {
+                enhancedAuctionSystem.stopAuction();
+                document.getElementById('liveAuctionRoom').style.display = 'none';
+                document.getElementById('compactAuctionsPage').style.display = 'block';
+                notificationSystem.show('تم الخروج', 'تم الخروج من غرفة المزاد المباشر', 'info');
+            }
+        }
+
+        function switchMedia(mediaType) {
+            appState.liveAuction.currentMedia = mediaType;
+            
+            const livePlaceholder = document.getElementById('liveVideoPlaceholder');
+            const recordedImage = document.getElementById('recordedImage');
+            const mediaBtns = document.querySelectorAll('.media-btn');
+            
+            // تحديث الأزرار
+            mediaBtns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // تبديل الوسائط
+            if (mediaType === 'live') {
+                livePlaceholder.style.display = 'flex';
+                recordedImage.classList.remove('active');
+                notificationSystem.show('معلومة', 'تم التبديل إلى البث المباشر', 'info');
+            } else {
+                livePlaceholder.style.display = 'none';
+                recordedImage.classList.add('active');
+                notificationSystem.show('معلومة', 'تم التبديل إلى الصورة المسجلة', 'info');
+            }
+        }
+
+        function placeBid() {
+            enhancedAuctionSystem.placeBid();
+        }
+
+        function toggleSound() {
+            notificationSystem.show('معلومة', 'نظام الصوت - جاهز في النسخة النهائية', 'info');
+        }
+
+        // ==================== دوال نظام QR ====================
+        function simulateQRScan() {
+            // إنشاء رمز تجريبي للمحاكاة
+            const testCode = qrPaymentSystem.generateCode(100, false, 'اختبار');
+            processScannedQR(JSON.stringify({
+                type: 'blinko_payment',
+                serial: testCode.serial,
+                amount: testCode.amount,
+                id: testCode.id
+            }));
+            
+            notificationSystem.show('معلومة', '🔍 محاكاة المسح - تم مسح رمز تجريبي', 'info');
+        }
+
+        function processScannedQR(qrData) {
+            try {
+                const data = JSON.parse(qrData);
+                
+                if (data.type === 'blinko_payment') {
+                    qrPaymentSystem.scanCode(data.serial)
+                        .then(code => {
+                            displayScannedQRDetails(code);
+                        })
+                        .catch(error => {
+                            notificationSystem.show('خطأ', error.message, 'error');
+                        });
+                }
+            } catch (error) {
+                notificationSystem.show('خطأ', '❌ رمز QR غير صالح', 'error');
+            }
+        }
+
+        function displayScannedQRDetails(code) {
+            const details = document.getElementById('qrDetails');
+            const btn = document.getElementById('confirmPaymentBtn');
+            
+            document.getElementById('scannedAmount').textContent = code.amount;
+            document.getElementById('scannedSerial').textContent = code.serial;
+            document.getElementById('scannedStatus').textContent = 'نشط';
+            
+            btn.onclick = () => confirmQRPayment(code.serial);
+            details.style.display = 'block';
+        }
+
+        function confirmQRPayment(serial) {
+            if (!appState.user) {
+                notificationSystem.show('خطأ', '❌ يجب تسجيل الدخول أولاً', 'error');
+                return;
+            }
+
+            const success = qrPaymentSystem.useCode(serial, appState.user.phone);
+            
+            if (success) {
+                const amount = getCodeAmount(serial);
+                notificationSystem.show('نجاح', `✅ تم الدفع بنجاح! تم شحن ${amount} د.ت`, 'success');
+                
+                // تحديث رصيد المستخدم
+                appState.user.balance += amount;
+                document.getElementById('userBalance').textContent = appState.user.balance.toLocaleString() + ' DT';
+                
+                // إعادة تعيين الواجهة
+                resetQRScanner();
+                updateQRTracking();
+            } else {
+                notificationSystem.show('خطأ', '❌ فشل عملية الدفع', 'error');
+            }
+        }
+
+        function getCodeAmount(serial) {
+            const code = qrPaymentSystem.codes.find(c => c.serial === serial);
+            return code ? code.amount : 0;
+        }
+
+        function resetQRScanner() {
+            const details = document.getElementById('qrDetails');
+            details.style.display = 'none';
+        }
+
+        // معالجة رفع صورة QR
+        document.getElementById('qrImageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // محاكاة معالجة الصورة (في التطبيق الحقيقي سيتم استخدام jsQR)
+                notificationSystem.show('معلومة', '📁 تم رفع الصورة - جاري المعالجة...', 'info');
+                
+                // محاكاة المسح بعد تأخير
+                setTimeout(() => {
+                    simulateQRScan();
+                }, 1500);
+            }
+        });
+
+        // ==================== دوال المتجر الجانبي ====================
+        function openStorePanel() {
+            storeSystem.openStorePanel();
+        }
+
+        function closeStorePanel() {
+            storeSystem.closeStorePanel();
+        }
+
+        function addToCart(productName, price) {
+            storeSystem.addToCart(productName, price);
+        }
+
+        function filterProducts(category) {
+            storeSystem.filterProducts(category);
+        }
+
+        function checkout() {
+            storeSystem.checkout();
+        }
+
+        // ==================== دوال التحقق من رقم الهاتف ====================
+        function validatePhoneNumber(phone) {
+            const cleanPhone = phone.replace(/\s/g, '').replace(/[^\d+]/g, '');
+            
+            const patterns = [
+                /^\+216[2-9][0-9]{7}$/,        // +216 XX XXX XXX
+                /^00216[2-9][0-9]{7}$/,        // 00216XXXXXXXX
+                /^216[2-9][0-9]{7}$/,          // 216XXXXXXXX
+                /^[2-9][0-9]{7}$/              // XXXXXXXX (محلي)
+            ];
+            
+            return patterns.some(pattern => pattern.test(cleanPhone));
+        }
+
+        function formatPhoneNumber(value) {
+            let numbers = value.replace(/\D/g, '');
+            
+            if (numbers.startsWith('216')) {
+                numbers = '+' + numbers;
+            }
+            if (numbers.startsWith('0') && numbers.length > 1) {
+                numbers = '+216' + numbers.substring(1);
+            }
+            if (numbers.length === 8 && /^[2-9]/.test(numbers)) {
+                numbers = '+216' + numbers;
+            }
+            
+            let formatted = numbers.substring(0, 4);
+            if (numbers.length > 4) {
+                formatted += ' ' + numbers.substring(4, 6);
+            }
+            if (numbers.length > 6) {
+                formatted += ' ' + numbers.substring(6, 9);
+            }
+            if (numbers.length > 9) {
+                formatted += ' ' + numbers.substring(9, 12);
+            }
+            
+            return formatted;
+        }
+
+        function validatePhoneInput(phone) {
+            const phoneInput = document.getElementById('phoneNumber');
+            const phoneError = document.getElementById('phoneError');
+            const cleanPhone = phone.replace(/\s/g, '');
+            
+            if (!cleanPhone) {
+                phoneInput.classList.remove('error');
+                phoneError.classList.remove('show');
+                return false;
+            }
+            
+            const isValid = validatePhoneNumber(phone);
+            
+            if (!isValid) {
+                phoneInput.classList.add('error');
+                phoneError.classList.add('show');
+            } else {
+                phoneInput.classList.remove('error');
+                phoneError.classList.remove('show');
+            }
+            
+            return isValid;
+        }
+
+        // ==================== دوال الوصولية ====================
+        function toggleHighContrast() {
+            appState.settings.highContrast = !appState.settings.highContrast;
+            document.body.classList.toggle('high-contrast', appState.settings.highContrast);
+            
+            notificationSystem.show(
+                appState.settings.highContrast ? 
+                'تم تفعيل وضع التباين العالي' : 'تم إيقاف وضع التباين العالي',
+                'info'
+            );
+        }
+
+        // ==================== إنشاء جسيمات الخلفية ====================
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = window.innerWidth < 768 ? 10 : 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 10 + 5 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 5 + 's';
+                particle.style.opacity = Math.random() * 0.5 + 0.2;
+                particle.style.willChange = 'transform';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // ==================== تهيئة التطبيق مع التحسينات ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // بدء أنظمة التحسين الآمنة
+            safeBackupSystem.autoBackup();
+            safeMemoryManager.startAutoCleanup();
+            
+            // إعداد حقل إدخال رقم الهاتف
+            const phoneInput = document.getElementById('phoneNumber');
+            
+            phoneInput.addEventListener('input', function(e) {
+                const cursorPosition = e.target.selectionStart;
+                const oldValue = e.target.value;
+                const newValue = formatPhoneNumber(oldValue);
+                
+                e.target.value = newValue;
+                
+                const diff = newValue.length - oldValue.length;
+                e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+                
+                validatePhoneInput(newValue);
+            });
+            
+            phoneInput.addEventListener('blur', function(e) {
+                validatePhoneInput(e.target.value);
+            });
+            
+            // معالجة تسجيل الدخول
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const phoneNumber = document.getElementById('phoneNumber').value;
+                const ageCheck = document.getElementById('ageCheck').checked;
+                const ownershipCheck = document.getElementById('ownershipCheck').checked;
+                const termsCheck = document.getElementById('termsCheck').checked;
+
+                if (!validatePhoneInput(phoneNumber)) {
+                    notificationSystem.show('خطأ', 'يرجى إدخال رقم هاتف تونسي صحيح', 'error');
+                    return;
+                }
+
+                if (!ageCheck || !ownershipCheck || !termsCheck) {
+                    notificationSystem.show('خطأ', 'يرجى الموافقة على جميع الشروط والأحكام', 'error');
+                    return;
+                }
+
+                appState.user = {
+                    phone: phoneNumber,
+                    registrationDate: new Date(),
+                    balance: 1500
+                };
+
+                // تحديث صلاحية المزايدة في الغرفة المباشرة
+                appState.liveAuction.userCanBid = true;
+
+                notificationSystem.show('نجاح', 'تم تسجيل الدخول بنجاح!', 'success');
+                setTimeout(() => {
+                    showCompactAuctionsPage();
+                }, 1500);
+            });
+
+            // تهيئة الأنظمة الجديدة
+            userRatingSystem.updateAverageRatingDisplay();
+            
+            // تحديث الإحصائيات السريعة كل 5 ثواني
+            setInterval(updateQuickStats, 5000);
+            
+            // تهيئة نظام QR
+            updateQRTracking();
+
+            // تهيئة نظام إدارة المزادات
+            updateAuctionStats();
+            displayAuctionsList();
+            updatePriceAnalysis();
+
+            // معاينة الوسائط
+            const auctionMedia = document.getElementById('auctionMedia');
+            if (auctionMedia) {
+                auctionMedia.addEventListener('change', function(e) {
+                    const previewContainer = document.getElementById('previewContainer');
+                    const mediaPreview = document.getElementById('mediaPreview');
+                    
+                    if (previewContainer) previewContainer.innerHTML = '';
+                    
+                    if (e.target.files.length > 0) {
+                        if (mediaPreview) mediaPreview.style.display = 'block';
+                        
+                        for (let file of e.target.files) {
+                            const url = URL.createObjectURL(file);
+                            const previewItem = document.createElement('div');
+                            previewItem.className = 'preview-item';
+                            
+                            if (file.type.startsWith('image/')) {
+                                previewItem.innerHTML = `<img src="${url}" alt="Preview">`;
+                            } else {
+                                previewItem.innerHTML = `
+                                    <div style="width: 100%; height: 100%; background: var(--border); display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-video" style="color: var(--text-secondary); font-size: 1.5em;"></i>
+                                    </div>
+                                `;
+                            }
+                            
+                            if (previewContainer) previewContainer.appendChild(previewItem);
+                        }
+                    } else {
+                        if (mediaPreview) mediaPreview.style.display = 'none';
+                    }
+                });
+            }
+            
+            // تحديث التحليل في الوقت الحقيقي
+            ['marketValue', 'auctionCeiling', 'defaultBidPrice', 'currentPrice'].forEach(field => {
+                const element = document.getElementById(field);
+                if (element) {
+                    element.addEventListener('input', updatePriceAnalysis);
+                }
+            });
+
+            // إغلاق المتجر بالزر ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeStorePanel();
+                }
+            });
+
+            // تكامل مع النظام الحالي
+            if (typeof appState !== 'undefined') {
+                appState.store = storeSystem;
+            }
+
+            console.log('🛍️ متجر Blinko الجانبي جاهز!');
+        });
+
+        // محاكاة مزايدات تلقائية من مستخدمين آخرين
+        setInterval(() => {
+            if (enhancedAuctionSystem.isActive && Math.random() > 0.7) {
+                const users = ['مستخدم ١', 'مستخدم ٢', 'مستخدم ٣'];
+                const randomUser = users[Math.floor(Math.random() * users.length)];
+                enhancedAuctionSystem.placeBid(randomUser);
+            }
+        }, 4000);
+
+        // تحديث لوحة التحكم كل 3 ثواني
+        setInterval(updateQuickStats, 3000);
+    </script>
+</body>
+</html>
